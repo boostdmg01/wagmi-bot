@@ -1,0 +1,5 @@
+{
+    "API_URL": "http://YOUR_URL_8080_OR_PROXY/api/",
+    "WEBSOCKET_API_URL": "http://YOUR_URL_8080_OR_PROXY",
+    "DISCORD_OAUTH_URL": ""
+}
