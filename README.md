@@ -45,13 +45,13 @@ Add your saved information from preparation in here:\
 
 Add your saved information from preparation in here:\
 **API_KEY** - API Key needed for requests to be processed\
-**AUTHORIZED_DISCORD_IDS** - Discord User Ids which are eligible for using the admin frontend (comma-seperated)\
+**AUTHORIZED_DISCORD_IDS** - Discord User Ids which are eligible for using the admin frontend (comma-seperated) \
 **DISCORD_CLIENT_ID** - Discord Application Client ID\
 **DISCORD_CLIENT_SECRET** - Discord Application Client Secret\
-**DISCORD_REDIRECT_URI** - Redirect URL to Backend API for authentication (ex: http://localhost:8080/api/discord/login)\
+**DISCORD_REDIRECT_URI** - Redirect URL to Backend API for authentication (ex: http://localhost:8080/api/discord/login) \
 **DISCORD_GUILD_ID** - Guild ID of your server\
 **DISCORD_BOT_TOKEN** - Your Discord bot token\
-**FRONTEND_URL** - Redirect after login (ex: http://localhost:8080/admin/valuated-messages)\
+**FRONTEND_URL** - Redirect after login (ex: http://localhost:8080/admin/valuated-messages) \
 **SESSION_SECRET** - Secret key for server sessions\
 **ENCRYPTION_KEY** - 32 chars long secret which private keys/mnemonic get encrypted with
 
