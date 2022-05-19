@@ -36,32 +36,32 @@ After setting up the permissions for your channels for the bot go to  Server Set
 
 ### client/src/config.json
 
-Add your saved information from preparation in here:
-**API_URL** -  Your URL suffixed with /api/
-**WEBSOCKET_API_URL** - Your URL without trailing slash
-**DISCORD_OAUTH_LINK** - Generated Discord OAuth Link with identify scope
+Add your saved information from preparation in here:\
+**API_URL** -  Your URL suffixed with /api/\
+**WEBSOCKET_API_URL** - Your URL without trailing slash\
+**DISCORD_OAUTH_LINK** - Generated Discord OAuth Link with identify scope\
 
 ### api/.env
 
-Add your saved information from preparation in here:
-**API_KEY** - API Key needed for requests to be processed
-**AUTHORIZED_DISCORD_IDS** - Discord User Ids which are eligible for using the admin frontend (comma-seperated)
-**DISCORD_CLIENT_ID** - Discord Application Client ID
-**DISCORD_CLIENT_SECRET** - Discord Application Client Secret
-**DISCORD_REDIRECT_URI** - Redirect URL to Backend API for authentication (ex: http://localhost:8080/api/discord/login)
-**DISCORD_GUILD_ID** - Guild ID of your server
-**DISCORD_BOT_TOKEN** - Your Discord bot token
-**FRONTEND_URL** - Redirect after login (ex: http://localhost:8080/admin/valuated-messages)
-**SESSION_SECRET** - Secret key for server sessions
+Add your saved information from preparation in here:\
+**API_KEY** - API Key needed for requests to be processed\
+**AUTHORIZED_DISCORD_IDS** - Discord User Ids which are eligible for using the admin frontend (comma-seperated)\
+**DISCORD_CLIENT_ID** - Discord Application Client ID\
+**DISCORD_CLIENT_SECRET** - Discord Application Client Secret\
+**DISCORD_REDIRECT_URI** - Redirect URL to Backend API for authentication (ex: http://localhost:8080/api/discord/login)\
+**DISCORD_GUILD_ID** - Guild ID of your server\
+**DISCORD_BOT_TOKEN** - Your Discord bot token\
+**FRONTEND_URL** - Redirect after login (ex: http://localhost:8080/admin/valuated-messages)\
+**SESSION_SECRET** - Secret key for server sessions\
 **ENCRYPTION_KEY** - 32 chars long secret which private keys/mnemonic get encrypted with
 
 ### bot/.env
 
-Add your saved information from preparation in here:
-**TOKEN** - Your Discord bot token
-**API_TOKEN** - same API Key provided in api/.env
-**GUILD_ID** - Your Discord guild id
-**PREFIX** - Prefix for the discord command 
+Add your saved information from preparation in here:\
+**TOKEN** - Your Discord bot token\
+**API_TOKEN** - same API Key provided in api/.env\
+**GUILD_ID** - Your Discord guild id\
+**PREFIX** - Prefix for the discord command \
 
 ### docker-compose.yaml
 Change the mysql credentials to whatever you like. Do not change the ports!
