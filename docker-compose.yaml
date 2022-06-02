@@ -45,6 +45,7 @@ services:
             - 8080:8080
         volumes:
             - ./client/dist:/usr/share/nginx/html
+            - ./client/log/nginx:/var/log/nginx
         depends_on:
             - api
             - bot

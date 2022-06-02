@@ -17,6 +17,8 @@ const Validation = {
         return false
     },
     isEVMAddress: function(str) {
+        if (/^0x0+$/.test(str)) return false
+
         return polkadotUtil.isEthereumAddress(str)
     },
     isJSON: function(str) {

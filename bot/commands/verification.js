@@ -52,7 +52,11 @@ exports.verification = async (client, guild, button) => {
 						}
 					} else if (button.customId === 'verify_evm') {
 						data.evmAddress = msg.content
-						isValid = polkadotUtil.isEthereumAddress(data.evmAddress)
+						if (/^0x0+$/.test(data.evmAddress)) {
+							isValid = false
+						} else {
+							isValid = polkadotUtil.isEthereumAddress(data.evmAddress)
+						}
 					} else if (button.customId === 'verify_twitter') {
 						data.twitterHandle = msg.content
 					}

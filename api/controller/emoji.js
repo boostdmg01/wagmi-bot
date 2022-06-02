@@ -11,7 +11,7 @@ exports.insert = async (req, res) => {
 
 	const emoji = new Emoji(req.body)
 
-	let errors = checkValidation(emoji)
+	let errors = checkEmojiValidation(emoji)
 
 	if (errors.length) {
 		res.status(422).send({
@@ -41,7 +41,7 @@ exports.update = async (req, res) => {
 
 	const emoji = new Emoji(req.body)
 
-	let errors = checkValidation(emoji)
+	let errors = checkEmojiValidation(emoji)
 
 	if (errors.length) {
 		res.status(422).send({
@@ -150,7 +150,7 @@ exports.getById = async (req, res) => {
 	}
 }
 
-checkValidation = (emoji) => {
+checkEmojiValidation = (emoji) => {
 	let errors = []
 	if (!Validation.isNumber(emoji.emojiId)) {
 		errors.push({

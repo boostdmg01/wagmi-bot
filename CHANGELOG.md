@@ -1,5 +1,14 @@
 # CHANGELOG
 
+## 1.0.2
+### Bugfixes
+* API: Validation fixed
+* Client: Fixed missing input fields for processing transaction modal
+* API/Bot: Prevent EVM null addresses to be submitted
+
+### Changes
+* Client: NGINX logs are now mounted to client/logs
+
 ## 1.0.1
 ### Bugfixes
 * API: Fixed Discord Emoji Endpoint

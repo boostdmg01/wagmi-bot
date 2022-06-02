@@ -11,7 +11,7 @@ exports.insert = async (req, res) => {
 
 	const treasury = new Treasury(req.body)
 
-	let errors = checkValidation(treasury)
+	let errors = checkTreasuryValidation(treasury)
 
 	if (errors.length) {
 		res.status(422).send({
@@ -41,7 +41,7 @@ exports.update = async (req, res) => {
 
 	const treasury = new Treasury(req.body)
 
-	let errors = checkValidation(treasury, true)
+	let errors = checkTreasuryValidation(treasury, true)
 
 	if (errors.length) {
 		res.status(422).send({
@@ -162,7 +162,7 @@ exports.getAllPublic = async (req, res) => {
 	}
 }
 
-checkValidation = (treasury, isUpdate = false) => {
+checkTreasuryValidation = (treasury, isUpdate = false) => {
 	let errors = []
 	if (!Validation.isNotEmpty(treasury.name)) {
 		errors.push({

@@ -28,7 +28,10 @@ export default {
       type: String,
       default: "text",
     },
-    errors: Array,
+    errors: {
+      type: Array,
+      default: () => []
+    }
   },
   computed: {
     classes: function() {
