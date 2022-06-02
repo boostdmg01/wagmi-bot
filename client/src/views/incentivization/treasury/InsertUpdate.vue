@@ -19,7 +19,7 @@
         >
           <div>
             <FormLabel for="name">Name</FormLabel>
-            <FormInput v-model="treasury.name" id="name" />
+            <FormInput v-model="treasury.name" :errors="getErrors('name')" id="name" />
           </div>
           <div class="mt-6">
             <FormLabel for="elevationActive">Elevation enabled</FormLabel>
@@ -30,6 +30,7 @@
               <FormLabel for="elevationChannelId">Elevate to Channel</FormLabel>
               <multiselect
                 v-model="treasury.elevationChannelId"
+                :class="getSelectClasses('elevationChannelId')"
                 :allow-empty="false"
                 :showLabels="false"
                 :showPointer="false"
@@ -44,12 +45,16 @@
                   ><div>{{ option.name }}</div></template
                 >
               </multiselect>
+              <p class="text-red-700 pl-2  my-2" v-for="error in getErrors('elevationChannelId')" :key="error">
+                {{ error.message }}
+              </p>
             </div>
 
             <div class="mt-6">
               <FormLabel for="elevationEmojiId">Elevation Emoji</FormLabel>
               <multiselect
                 v-model="treasury.elevationEmojiId"
+                :class="getSelectClasses('elevationEmojiId')"
                 :allow-empty="false"
                 :showLabels="false"
                 :showPointer="false"
@@ -80,12 +85,14 @@
                   </div></template
                 >
               </multiselect>
+              <p class="text-red-700 pl-2  my-2" v-for="error in getErrors('elevationEmojiId')" :key="error">
+                {{ error.message }}
+              </p>
             </div>
-
             <div class="mt-6">
               <FormLabel for="elevationAmount">Required emoji amount</FormLabel>
               <FormInput
-                v-model="treasury.elevationAmount"
+                v-model="treasury.elevationAmount" :errors="getErrors('elevationAmount')"
                 id="elevationAmount"
               />
             </div>
@@ -104,10 +111,11 @@
             mt-6
           "
         >
-          <div class="mt-6">
+          <div>
             <FormLabel for="type">Type</FormLabel>
             <multiselect
               v-model="treasury.type"
+                :class="getSelectClasses('type')"
               :allow-empty="true"
               :showLabels="false"
               :showPointer="false"
@@ -125,20 +133,24 @@
                 option.name
               }}</template>
             </multiselect>
+              <p class="text-red-700 pl-2  my-2" v-for="error in getErrors('type')" :key="error">
+                {{ error.message }}
+              </p>
           </div>
           <div class="mt-6">
             <FormLabel for="type">Coin/Token Name</FormLabel>
-            <FormInput v-model="treasury.coinName" id="coinName" />
+            <FormInput v-model="treasury.coinName" :errors="getErrors('coinName')" id="coinName" />
           </div>
           <div class="mt-6">
             <FormLabel for="rpcUrl">RPC URL</FormLabel>
-            <FormInput v-model="treasury.rpcUrl" id="rpcUrl" />
+            <FormInput v-model="treasury.rpcUrl" :errors="getErrors('rpcUrl')" id="rpcUrl" />
           </div>
           <div v-if="type === 'evm'">
             <div class="mt-6">
               <FormLabel for="isNative">Token Type</FormLabel>
               <multiselect
                 v-model="treasury.isNative"
+                :class="getSelectClasses('isNative')"
                 :allow-empty="true"
                 :showLabels="false"
                 @input="updateTokenType"
@@ -157,29 +169,33 @@
                   option.name
                 }}</template>
               </multiselect>
+              <p class="text-red-700 pl-2  my-2" v-for="error in getErrors('isNative')" :key="error">
+                {{ error.message }}
+              </p>
             </div>
             <div class="mt-6">
               <FormLabel for="privateKey">Private Key</FormLabel>
               <FormInput
-                v-model="treasury.privateKey"
+                v-model="treasury.privateKey" :errors="getErrors('privateKey')"
                 type="textarea"
                 id="privateKey"
               />
             </div>
             <div class="mt-6" v-if="isNative === 0">
               <FormLabel for="tokenAddress">Contract Address</FormLabel>
-              <FormInput v-model="treasury.tokenAddress" id="tokenAddress" />
+              <FormInput v-model="treasury.tokenAddress" :errors="getErrors('tokenAddress')" id="tokenAddress" />
             </div>
             <div class="mt-6">
               <FormLabel for="tokenDecimals">Token Decimals</FormLabel>
-              <FormInput v-model="treasury.tokenDecimals" id="tokenDecimals" />
+              <FormInput v-model="treasury.tokenDecimals" :errors="getErrors('tokenDecimals')" id="tokenDecimals" />
             </div>
           </div>
           <div v-else-if="type === 'substrate'">
             <div class="mt-6">
-              <FormLabel for="type">Type</FormLabel>
+              <FormLabel for="parachainType">Payout Type</FormLabel>
               <multiselect
                 v-model="treasury.parachainType"
+                :class="getSelectClasses('parachainType')"
                 :allow-empty="true"
                 :showLabels="false"
                 :showPointer="false"
@@ -187,23 +203,22 @@
                 label="name"
                 track-by="value"
                 :options="[
-                  { value: 0, name: 'Parachain' },
-                  { value: 1, name: 'Statemine Asset' },
-                  { value: 2, name: 'Statemint Asset' },
+                  { value: 0, name: 'Native Coin' },
+                  { value: 1, name: 'Asset' },
                 ]"
               >
                 <template slot="singleLabel" slot-scope="{ option }">{{
                   option.name
                 }}</template>
-                <template slot="option" slot-scope="{ option }">{{
-                  option.name
-                }}</template>
               </multiselect>
+              <p class="text-red-700 pl-2  my-2" v-for="error in getErrors('parachainType')" :key="error">
+                {{ error.message }}
+              </p>
             </div>
-            <div v-if="parachainType > 0">
+            <div v-if="parachainType == 1">
               <div class="mt-6">
                 <FormLabel for="assetId">Asset ID</FormLabel>
-                <FormInput v-model="treasury.assetId" id="assetId" />
+                <FormInput v-model="treasury.assetId" :errors="getErrors('assetId')" id="assetId" />
               </div>
 
               <div class="mt-6">
@@ -213,22 +228,22 @@
                 >
                 <FormToggle v-model="treasury.sendMinBalance" />
               </div>
-              <div class="mt-6">
+            </div>
+            <div class="mt-6">
+              <FormLabel for="chainPrefix">Chain Prefix</FormLabel>
+              <FormInput v-model="treasury.chainPrefix" :errors="getErrors('chainPrefix')" id="chainPrefix" />
+            </div>
+            <div class="mt-6">
                 <FormLabel for="sendExistentialDeposit"
                   >Send existential deposit if receiver balance is not
                   sufficient</FormLabel
                 >
                 <FormToggle v-model="treasury.sendExistentialDeposit" />
-              </div>
-            </div>
-            <div class="mt-6">
-              <FormLabel for="chainPrefix">Chain Prefix</FormLabel>
-              <FormInput v-model="treasury.chainPrefix" id="chainPrefix" />
             </div>
             <div class="mt-6">
               <FormLabel for="mnemonic">Mnemonic</FormLabel>
               <FormInput
-                v-model="treasury.mnemonic"
+                v-model="treasury.mnemonic" :errors="getErrors('mnemonic')"
                 type="textarea"
                 id="mnemonic"
               />
@@ -236,7 +251,7 @@
             <div class="mt-6">
               <FormLabel for="chainTypes">Types JSON</FormLabel>
               <FormInput
-                v-model="treasury.chainTypes"
+                v-model="treasury.chainTypes" :errors="getErrors('chainTypes')"
                 type="textarea"
                 id="chainTypes"
               />
@@ -252,7 +267,7 @@
                 >Royality Percentage</FormLabel
               >
               <FormInput
-                v-model="treasury.royalityPercentage"
+                v-model="treasury.royalityPercentage" :errors="getErrors('royalityPercentage')"
                 id="royalityPercentage"
               />
             </div>
@@ -260,10 +275,32 @@
             <div class="mt-6">
               <FormLabel for="royalityAddress">Royality Address</FormLabel>
               <FormInput
-                v-model="treasury.royalityAddress"
+                v-model="treasury.royalityAddress" :errors="getErrors('royalityAddress')"
                 id="royalityAddress"
               />
             </div>
+          </div>
+        </div>
+
+        <h2 class="mt-6 text-l font-semibold">Security</h2>
+        <div
+          class="
+            px-4
+            border
+            rounded-lg
+            bg-white
+            border-gray-300
+            dark:border-gray-700
+            p-5
+            mt-6
+          "
+        >
+          <div>
+            <FormLabel for="encryptionKey">Encryption</FormLabel>
+              <FormInput
+                v-model="treasury.encryptionKey" :errors="getErrors('encryptionKey')"
+                id="encryptionKey"
+              />
           </div>
 
           <div class="flex justify-end mt-6">
@@ -313,10 +350,9 @@ export default {
       channels: [],
       emojis: [],
       id: null,
-      oldMnemonic: "",
-      oldPrivateKey: "",
       treasury: {
         id: null,
+        encryptionKey: "",
         name: "",
         coinName: "",
         elevationChannelId: null,
@@ -335,11 +371,12 @@ export default {
         royalityEnabled: false,
         royalityPercentage: "",
         royalityAddress: "",
-        parachainType: 0,
+        parachainType: null,
         assetId: null,
-        sendMinBalance: false,
+        sendMinBalance: true,
         sendExistentialDeposit: false,
       },
+      errors: []
     };
   },
   beforeMount() {
@@ -388,7 +425,6 @@ export default {
         await API.request("treasury/" + this.$route.params.id)
           .then((response) => {
             this.treasury = response.data;
-            console.log(this.treasury);
 
             this.treasury.elevationChannelId =
               this.channels.find(
@@ -408,25 +444,9 @@ export default {
                 ? { value: "substrate", name: "Substrate" }
                 : { value: "evm", name: "EVM" };
 
-            if (this.treasury.parachainType === 0) {
-              this.treasury.parachainType = { value: 0, name: "Parachain" };
-            } else if (this.treasury.parachainType === 1) {
-              this.treasury.parachainType = {
-                value: 1,
-                name: "Statemine Asset",
-              };
-            } else if (this.treasury.parachainType === 2) {
-              this.treasury.parachainType = {
-                value: 2,
-                name: "Statemint Asset",
-              };
-            }
-
-            this.oldMnemonic = this.treasury.mnemonic;
-            this.oldPrivateKey = this.treasury.privateKey;
-
-            this.treasury.mnemonic = "";
-            this.treasury.privateKey = "";
+            this.treasury.parachainType = this.treasury.parachainType === 0
+                ? { value: 0, name: "Native Coin" }
+                : { value: 1, name: "Asset" };
 
             this.treasury.elevationActive = !!this.treasury.elevationActive;
             this.treasury.royalityEnabled = !!this.treasury.royalityEnabled;
@@ -454,11 +474,6 @@ export default {
       data.parachainType = data.parachainType?.value;
       data.type = data.type?.value;
 
-      if (data.privateKey === null || data.privateKey === "")
-        data.privateKey = this.oldPrivateKey;
-      if (data.mnemonic === null || data.mnemonic === "")
-        data.mnemonic = this.oldMnemonic;
-
       API.request(
         this.action == "insert"
           ? `treasury/insert/`
@@ -472,6 +487,9 @@ export default {
         })
         .catch((error) => {
           this.$notify({ type: "error", text: error.data?.message || error });
+          if (error.data?.errors) {
+            this.errors = error.data.errors
+          }
         });
     },
     updateTokenType() {
@@ -490,6 +508,14 @@ export default {
         this.treasury.parachainType = oldValue;
       });
     },
+    getErrors(key) {
+      return this.errors.filter(e => e.key === key)
+    },
+    getSelectClasses(key) {
+      if (this.getErrors(key).length > 0) return "select-error"
+
+      return ""
+    }
   },
 };
 </script>

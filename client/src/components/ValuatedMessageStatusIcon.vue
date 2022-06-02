@@ -63,12 +63,14 @@ export default {
         cssClass += "fa-clock";
       } else if (this.status === 2) {
         cssClass += "fa-check";
-      } else if (this.status === 3) {
+      } else if (this.status === 3 || this.status === 6) {
         cssClass += "fa-exclamation-triangle";
       } else if (this.status === 4) {
         cssClass += "fa-times";
       } else if (this.status === 5) {
         cssClass += "fa-circle-user";
+      } else if (this.status === 7) {
+        cssClass += "fa-key";
       }
 
       return cssClass;
@@ -84,6 +86,10 @@ export default {
         return "Transaction Error";
       } else if (this.status === 5) {
         return "No address submitted";
+      } else if (this.status === 6) {
+        return "Insufficient Asset Balance";
+      } else if (this.status === 7) {
+        return "Invalid encryption key";
       }
     },
   },

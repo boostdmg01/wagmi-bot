@@ -1,4 +1,5 @@
 const Treasury = require("../model/treasury.js")
+const Validation = require("../lib/validation")
 const io = require("../lib/io").getIO()
 
 exports.insert = async (req, res) => {
@@ -9,6 +10,16 @@ exports.insert = async (req, res) => {
 	}
 
 	const treasury = new Treasury(req.body)
+
+	let errors = checkValidation(treasury)
+
+	if (errors.length) {
+		res.status(422).send({
+			message: 'Validation failed',
+			errors
+		})
+		return
+	}
 
 	try {
 		const result = await Treasury.insert(treasury)
@@ -30,6 +41,16 @@ exports.update = async (req, res) => {
 
 	const treasury = new Treasury(req.body)
 
+	let errors = checkValidation(treasury, true)
+
+	if (errors.length) {
+		res.status(422).send({
+			message: 'Validation failed',
+			errors
+		})
+		return
+	}
+
 	try {
 		const result = await Treasury.update(req.params.id, treasury)
 		io.emit("update")
@@ -46,6 +67,22 @@ exports.delete = async (req, res) => {
 		res.status(400).send({
 			message: "Invalid payload"
 		})
+	}
+
+	let errors = []
+	if (!Validation.isNumber(req.params.id)) {
+		errors.push({
+			key: 'id',
+			message: 'Not a number'
+		})
+	}
+
+	if (errors.length) {
+		res.status(422).send({
+			message: 'Validation failed',
+			errors
+		})
+		return
 	}
 
 	try {
@@ -86,6 +123,22 @@ exports.getAll = async (req, res) => {
 }
 
 exports.getById = async (req, res) => {
+	let errors = []
+	if (!Validation.isNumber(req.params.id)) {
+		errors.push({
+			key: 'id',
+			message: 'Not a number'
+		})
+	}
+
+	if (errors.length) {
+		res.status(422).send({
+			message: 'Validation failed',
+			errors
+		})
+		return
+	}
+
 	try {
 		const result = await Treasury.getById(req.params.id)
 		res.send(result)
@@ -107,4 +160,147 @@ exports.getAllPublic = async (req, res) => {
 				err.message || "Some error occurred while retrieving treasuries."
 		})
 	}
+}
+
+checkValidation = (treasury, isUpdate = false) => {
+	let errors = []
+	if (!Validation.isNotEmpty(treasury.name)) {
+		errors.push({
+			key: 'name',
+			message: 'Can not be empty'
+		})
+	}
+
+	if (!Validation.isNotEmpty(treasury.coinName)) {
+		errors.push({
+			key: 'coinName',
+			message: 'Can not be empty'
+		})
+	}
+
+	if (!Validation.isNotEmpty(treasury.encryptionKey)) {
+		errors.push({
+			key: 'encryptionKey',
+			message: 'Can not be empty'
+		})
+	}
+
+	if (treasury.elevationActive) {
+		if (!Validation.isNumber(treasury.elevationChannelId)) {
+			errors.push({
+				key: 'elevationChannelId',
+				message: 'Not a number'
+			})
+		}
+
+		if (!Validation.isNumber(treasury.elevationEmojiId)) {
+			errors.push({
+				key: 'elevationEmojiId',
+				message: 'Not a number'
+			})
+		}
+
+		if (!Validation.isNumber(treasury.elevationAmount)) {
+			errors.push({
+				key: 'elevationAmount',
+				message: 'Not a number'
+			})
+		}
+	}
+
+	if (!Validation.isWebsocket(treasury.rpcUrl)) {
+		errors.push({
+			key: 'rpcUrl',
+			message: 'Not a valid RPC URL'
+		})
+	}
+
+	if (treasury.type === "substrate") {
+		if (!Validation.isNumber(treasury.chainPrefix)) {
+			errors.push({
+				key: 'chainPrefix',
+				message: 'Not a number'
+			})
+		}
+
+		if (Validation.isNotEmpty(treasury.chainTypes) && !Validation.isJSON(treasury.chainTypes)) {
+			errors.push({
+				key: 'chainTypes',
+				message: 'Not a valid json'
+			})
+		}
+
+		if (treasury.parachainType === 1) {
+			if (!Validation.isNumber(treasury.assetId)) {
+				errors.push({
+					key: 'assetId',
+					message: 'Not a number'
+				})
+			}
+		}
+
+		if (treasury.royalityEnabled === 1) {
+			if (!Validation.isSubstrateAddress(treasury.royalityAddress)) {
+				errors.push({
+					key: 'royalityAddress',
+					message: 'Not a Substrate address'
+				})
+			}
+		}
+
+		if (!isUpdate && !Validation.isNotEmpty(treasury.mnemonic)) {
+			errors.push({
+				key: 'mnemonic',
+				message: 'Can not be empty'
+			})
+		}
+	} else if (treasury.type === "evm") {
+		if (treasury.isNative === 0) {
+			if (!Validation.isEVMAddress(treasury.tokenAddress)) {
+				errors.push({
+					key: 'tokenAddress',
+					message: 'Not an EVM address'
+				})
+			}
+
+			if (!Validation.isNumber(treasury.tokenDecimals)) {
+				errors.push({
+					key: 'tokenDecimals',
+					message: 'Not a number'
+				})
+			}
+		}
+
+		if (treasury.royalityEnabled === 1) {
+			if (!Validation.isEVMAddress(treasury.royalityAddress)) {
+				errors.push({
+					key: 'royalityAddress',
+					message: 'Not an EVM address'
+				})
+			}
+		}
+
+		if (!isUpdate && !Validation.isNotEmpty(treasury.privateKey)) {
+			errors.push({
+				key: 'privateKey',
+				message: 'Can not be empty'
+			})
+		}
+	} else {
+		errors.push({
+			key: 'type',
+			message: 'Unknown selection'
+		})
+	}
+
+	if (treasury.royalityEnabled === 1) {
+		if (!Validation.isNumberOrDecimal(treasury.royalityPercentage)) {
+			errors.push({
+				key: 'royalityPercentage',
+				message: 'Not a number or decimal'
+			})
+		}
+	}
+
+	return errors
 }

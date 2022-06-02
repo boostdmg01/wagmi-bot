@@ -27,17 +27,18 @@ const Treasury = function (treasury) {
 	this.royalityPercentage = treasury.royalityPercentage || null
 	this.assetId = treasury.assetId || null
 	this.sendMinBalance = treasury.sendMinBalance || 1
-	this.sendExistentialDeposit = treasury.sendExistentialDeposit || 1
+	this.sendExistentialDeposit = treasury.sendExistentialDeposit || 0
 	this.parachainType = treasury.parachainType || 0
+	this.encryptionKey = treasury.encryptionKey || null
 }
 
 Treasury.insert = async (treasury) => {
 	try {
-		if (treasury.privateKey !== null) {
-			treasury.privateKey = crypto.encrypt(treasury.privateKey)
+		if (treasury.privateKey !== null && treasury.privateKey !== "") {
+			treasury.privateKey = crypto.encrypt(treasury.privateKey, treasury.encryptionKey)
 		}
-		if (treasury.mnemonic !== null) {
-			treasury.mnemonic = crypto.encrypt(treasury.mnemonic)
+		if (treasury.mnemonic !== null && treasury.mnemonic !== "") {
+			treasury.mnemonic = crypto.encrypt(treasury.mnemonic, treasury.encryptionKey)
 		}
 
 		await sql.execute("INSERT INTO treasury (name, elevationActive, elevationChannelId, elevationEmojiId, elevationAmount, type, rpcUrl, chainPrefix, mnemonic, chainTypes, privateKey, isNative, tokenAddress, tokenDecimals, coinName, royalityAddress, royalityEnabled, royalityPercentage, assetId, sendMinBalance, sendExistentialDeposit, parachainType) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", [
@@ -75,11 +76,11 @@ Treasury.insert = async (treasury) => {
 
 Treasury.update = async (id, treasury) => {
 	try {
-		if (treasury.privateKey !== null) {
-			treasury.privateKey = crypto.encrypt(treasury.privateKey)
+		if (treasury.privateKey !== null && treasury.privateKey !== "") {
+			treasury.privateKey = crypto.encrypt(treasury.privateKey, treasury.encryptionKey)
 		}
-		if (treasury.mnemonic !== null) {
-			treasury.mnemonic = crypto.encrypt(treasury.mnemonic)
+		if (treasury.mnemonic !== null  && treasury.mnemonic !== "") {
+			treasury.mnemonic = crypto.encrypt(treasury.mnemonic, treasury.encryptionKey)
 		}
 
 		await sql.execute("UPDATE treasury SET name = ?, elevationActive = ?, elevationChannelId = ?, elevationEmojiId = ?, elevationAmount = ?, type = ?, rpcUrl = ?, chainPrefix = ?, mnemonic = ?, chainTypes = ?, privateKey = ?, isNative = ?, tokenAddress = ?, tokenDecimals = ?, coinName = ?, royalityAddress = ?, royalityEnabled = ?, royalityPercentage = ?, assetId = ?, sendMinBalance = ?, sendExistentialDeposit = ?, parachainType = ? WHERE id = ?", [
@@ -152,6 +153,10 @@ Treasury.getAll = async (options) => {
 	try {
 		let [rows] = await sql.query(`SELECT * FROM treasury ${where} ORDER BY ${_options.sortField} ${_options.sortOrder} ${limit}`)
 
+		rows.map(e => {
+			delete e.privateKey;
+			delete e.mnemonic;
+		})
 		if (!_options.paginated) {
 			return rows
 		} else {
@@ -189,6 +194,11 @@ Treasury.getAllPublic = async () => {
 Treasury.getById = async (id) => {
 	try {
 		let [rows] = await sql.execute("SELECT * FROM treasury WHERE id = ? LIMIT 1", [id])
+
+		rows.map(e => {
+			delete e.privateKey;
+			delete e.mnemonic;
+		})
 
 		if (rows.length == 1) {
 			return new Treasury(rows[0])

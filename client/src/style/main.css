@@ -30,6 +30,10 @@
     @apply bg-gray-50 border px-2.5 border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500;
 }
 
+.select-error .multiselect__tags, .select-error .multiselect__single {
+    @apply border-red-300 dark:border-red-700;
+}
+
 .multiselect__tag {
     @apply text-xs font-semibold inline-block py-1 px-2 uppercase rounded text-blue-600 bg-blue-200 pr-7;
 }

@@ -22,8 +22,6 @@ INSERT INTO `config` (`name`, `value`, `type`) VALUES
 ('director_role_id', '', 'string'),
 ('elevation_emoji_id', '', 'string'),
 ('elevation_required_emojis', '', 'integer'),
-('existential_deposit_statemine', '', 'string'),
-('existential_deposit_statemint', '', 'string'),
 ('finder_emoji_id', '', 'string'),
 ('finder_role_id', '', 'string'),
 ('instant_elevation_channel_id', '', 'string'),
@@ -75,7 +73,7 @@ CREATE TABLE `treasury` (
   `royalityPercentage` double DEFAULT NULL,
   `assetId` bigint(20) DEFAULT NULL,
   `sendMinBalance` tinyint(1) NOT NULL DEFAULT 1,
-  `sendExistentialDeposit` tinyint(1) NOT NULL DEFAULT 1,
+  `sendExistentialDeposit` tinyint(1) NOT NULL DEFAULT 0,
   `parachainType` tinyint(1) NOT NULL DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 

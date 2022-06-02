@@ -32,13 +32,32 @@ In the Discord Developer Portal go to your created application and navigate to t
 
 After setting up the permissions for your channels for the bot go to  Server Settings  »  Roles. For the Discord bot to be able to assign roles to members the Bot role needs to be above other assignable roles. Hover over the Bot role and you will see a handle show up on the left side to drag-and-drop the role above the assignable roles. 
 
+## Install packages
+
+Run:
+
+```
+$ cd api
+$ npm install
+$ cd ../client
+$ npm install
+$ cd ../bot
+$ npm install
+````
+
+## Get 2FA Key
+Run, save key and visit the url provided for the qrCode and add it to your authenticator app:
+```
+$ node api/2fa.js
+```
+
 ## Application Configuration
 
 ### client/src/config.json
 
 Add your saved information from preparation in here:\
-**API_URL** -  Your URL suffixed with /api/\
-**WEBSOCKET_API_URL** - Your URL without trailing slash\
+**API_URL** -  Your URL suffixed with /api/ (ex: http://localhost/api/)\
+**WEBSOCKET_API_URL** - Your URL with trailing slash (ex: http://localhost/) \
 **DISCORD_OAUTH_LINK** - Generated Discord OAuth Link with identify scope\
 
 ### api/.env
@@ -53,7 +72,7 @@ Add your saved information from preparation in here:\
 **DISCORD_BOT_TOKEN** - Your Discord bot token\
 **FRONTEND_URL** - Redirect after login (ex: http://localhost:8080/admin/valuated-messages) \
 **SESSION_SECRET** - Secret key for server sessions\
-**ENCRYPTION_KEY** - 32 chars long secret which private keys/mnemonic get encrypted with
+**TWOFA_KEY** - Secret key provided from previous step
 
 ### bot/.env
 
@@ -66,17 +85,15 @@ Add your saved information from preparation in here:\
 ### docker-compose.yaml
 Change the mysql credentials to whatever you like. Do not change the ports!
 
-## Installation
-
-First build a production ready artefact of the client:
-
-    cd client
-    npm i
-    npm run build --production
-
+## Build client and start docker containers
+Build client:
+```
+$ cd client
+$ npm run build --production
+```
 
 After preparing and configuring everything you start the docker instance in the root directory with:
-
-    docker compose up
-
+```
+$ docker compose up
+```
 You can now login through your provided url (ex: http://localhost:8080/admin)

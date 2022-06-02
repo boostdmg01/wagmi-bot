@@ -1,4 +1,5 @@
 const Emoji = require("../model/emoji.js")
+const Validation = require("../lib/validation")
 const io = require("../lib/io").getIO()
 
 exports.insert = async (req, res) => {
@@ -9,6 +10,16 @@ exports.insert = async (req, res) => {
 	}
 
 	const emoji = new Emoji(req.body)
+
+	let errors = checkValidation(emoji)
+
+	if (errors.length) {
+		res.status(422).send({
+			message: 'Validation failed',
+			errors
+		})
+		return
+	}
 
 	try {
 		const result = await Emoji.insert(emoji)
@@ -30,6 +41,16 @@ exports.update = async (req, res) => {
 
 	const emoji = new Emoji(req.body)
 
+	let errors = checkValidation(emoji)
+
+	if (errors.length) {
+		res.status(422).send({
+			message: 'Validation failed',
+			errors
+		})
+		return
+	}
+
 	try {
 		const result = await Emoji.update(req.params.id, emoji)
 		io.emit("update")
@@ -48,6 +69,21 @@ exports.delete = async (req, res) => {
 		})
 	}
 
+	let errors = []
+	if (!Validation.isNumber(req.params.id)) {
+		errors.push({
+			key: 'id',
+			message: 'Not a number'
+		})
+	}
+
+	if (errors.length) {
+		res.status(422).send({
+			message: 'Validation failed',
+			errors
+		})
+		return
+	}
 
 	try {
 		const result = await Emoji.delete(req.params.id)
@@ -87,6 +123,22 @@ exports.getAll = async (req, res) => {
 }
 
 exports.getById = async (req, res) => {
+	let errors = []
+	if (!Validation.isNumber(req.params.id)) {
+		errors.push({
+			key: 'id',
+			message: 'Not a number'
+		})
+	}
+
+	if (errors.length) {
+		res.status(422).send({
+			message: 'Validation failed',
+			errors
+		})
+		return
+	}
+
 	try {
 		const result = await Emoji.getById(req.params.id)
 		res.send(result)
@@ -96,4 +148,30 @@ exports.getById = async (req, res) => {
 				err.message || `Some error occurred while retrieving emoji with id ${req.params.id}.`
 		})
 	}
+}
+
+checkValidation = (emoji) => {
+	let errors = []
+	if (!Validation.isNumber(emoji.emojiId)) {
+		errors.push({
+			key: 'emojiId',
+			message: 'Not a number'
+		})
+	}
+
+	if (!Validation.isNumberOrDecimal(emoji.amount)) {
+		errors.push({
+			key: 'amount',
+			message: 'Not a number or decimal'
+		})
+	}
+
+	if (!Validation.isNumber(emoji.treasuryId)) {
+		errors.push({
+			key: 'treasuryId',
+			message: 'Not a number'
+		})
+	}
+
+	return errors
 }

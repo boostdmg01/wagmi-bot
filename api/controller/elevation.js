@@ -1,4 +1,5 @@
 const Elevation = require("../model/elevation.js")
+const Validation = require("../lib/validation")
 
 exports.insert = async (req, res) => {
 	if (!req.body) {
@@ -8,6 +9,43 @@ exports.insert = async (req, res) => {
 	}
 
 	const elevation = new Elevation(req.body)
+
+	let errors = []
+	if (!Validation.isNumber(elevation.oldMessageId)) {
+		errors.push({
+			key: 'oldMessageId',
+			message: 'Not a number'
+		})
+	}
+
+	if (!Validation.isNumber(elevation.oldMessageId)) {
+		errors.push({
+			key: 'oldChannelId',
+			message: 'Not a number'
+		})
+	}
+
+	if (!Validation.isNumber(elevation.newMessageId)) {
+		errors.push({
+			key: 'newMessageId',
+			message: 'Not a number'
+		})
+	}
+
+	if (!Validation.isNumber(elevation.newChannelId)) {
+		errors.push({
+			key: 'newChannelId',
+			message: 'Not a number'
+		})
+	}
+
+	if (errors.length) {
+		res.status(422).send({
+			message: 'Validation failed',
+			errors
+		})
+		return
+	}
 
 	try {
 		const result = await Elevation.insert(elevation)
@@ -59,7 +97,15 @@ exports.findOne = async (req, res) => {
 exports.getAll = async (req, res) => {
 	let options = {}
 
+	let errors = []
+	
 	if (req.query.searchFilter) {
+		if (!Validation.isNotEmpty(req.query.searchFilter)) {
+			errors.push({
+				key: 'searchFilter',
+				message: 'Empty'
+			})
+		}
 		options.searchFilter = req.query.searchFilter
 	}
 
@@ -69,6 +115,14 @@ exports.getAll = async (req, res) => {
 		options.sortOrder = req.query.sortOrder
 		options.pageSize = parseInt(req.query.pageSize)
 		options.pageNo = parseInt(req.query.pageNo)
+	}
+
+	if (errors.length) {
+		res.status(422).send({
+			message: 'Validation failed',
+			errors
+		})
+		return
 	}
 
 	try {

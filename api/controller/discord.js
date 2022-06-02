@@ -59,7 +59,7 @@ exports.getEmojis = async (req, res) => {
 				"Authorization": `Bot ${process.env.DISCORD_BOT_TOKEN}`
 			}
 		}).then(response => {
-			cache.writeCache('emojis', response.data)
+			cache.write('emojis', response.data)
 			res.status(200).send(response.data)
 		}).catch(error => {
 			res.status(500).send({ status: 500, error: error })
@@ -169,7 +169,6 @@ exports.logout = async (req, res) => {
 	req.session.data = {}
 	res.redirect(process.env.FRONTEND_URL)
 }
-
 
 exports.clear = async (req, res) => {
 	cache.clear()

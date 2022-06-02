@@ -167,7 +167,6 @@ export default {
       await API.request("discord/members")
         .then((response) => {
           this.members = response.data;
-          console.log(this.members);
         })
         .catch((error) => {
           console.log(error);

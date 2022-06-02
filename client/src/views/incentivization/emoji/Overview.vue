@@ -228,7 +228,7 @@ export default {
         message: `Are you sure you want to delete ${rowData.name} as an emoji? It cannot be undone.`,
         okButton: "Delete Forever",
       });
-      // If you throw an error, the method will terminate here unless you surround it wil try/catch
+      
       if (ok) {
         API.request(`emoji/delete/${rowData.id}`, null, "DELETE")
           .then((res) => {

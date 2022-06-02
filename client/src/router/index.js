@@ -4,7 +4,6 @@ import VerifiedUsers from '@/views/data/VerifiedUsers'
 import VerificationSettings from '@/views/settings/Verification'
 import RolesSettings from '@/views/settings/Roles'
 import MessageElevationSettings from '@/views/settings/MessageElevation'
-import ValuationSettings from '@/views/settings/Valuation'
 import TreasuryOverview from '@/views/incentivization/treasury/Overview'
 import TreasuryInsertUpdate from '@/views/incentivization/treasury/InsertUpdate'
 import EmojiOverview from '@/views/incentivization/emoji/Overview'
@@ -42,11 +41,6 @@ const routes = [
     path: '/admin/elevation',
     name: 'Message Elevation - Settings',
     component: MessageElevationSettings
-  },
-  {
-    path: '/admin/valuation',
-    name: 'Valuation - Settings',
-    component: ValuationSettings
   },
   {
     path: '/admin/treasuries',

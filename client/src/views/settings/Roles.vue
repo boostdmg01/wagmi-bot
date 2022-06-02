@@ -360,7 +360,6 @@ export default {
       await API.request("discord/roles")
         .then((response) => {
           this.roles = response.data;
-          console.log(this.roles);
         })
         .catch((error) => {
           console.log(error);
@@ -369,7 +368,6 @@ export default {
       await API.request("discord/emojis")
         .then((response) => {
           this.emojis = response.data;
-          console.log(this.emojis);
         })
         .catch((error) => {
           console.log(error);

@@ -49,11 +49,14 @@
                 </div></template
               >
             </multiselect>
+              <p class="text-red-700 pl-2  my-2" v-for="error in getErrors('emojiId')" :key="error">
+                {{ error.message }}
+              </p>
           </div>
 
           <div class="mt-6">
             <FormLabel for="amount">Treasury Value</FormLabel>
-            <FormInput v-model="emoji.amount" id="amount" />
+            <FormInput v-model="emoji.amount" id="amount" :errors="getErrors('amount')" />
           </div>
 
           <div class="mt-6">
@@ -74,6 +77,9 @@
                 ><div>{{ option.name }}</div></template
               >
             </multiselect>
+              <p class="text-red-700 pl-2  my-2" v-for="error in getErrors('treasuryId')" :key="error">
+                {{ error.message }}
+              </p>
           </div>
         </div>
 
@@ -121,6 +127,7 @@ export default {
       treasuries: [],
       emojis: [],
       id: null,
+      errors: [],
       emoji: {
         id: null,
         treasuryId: null,
@@ -141,7 +148,6 @@ export default {
       await API.request("treasury/all")
         .then((response) => {
           this.treasuries = response.data;
-          console.log(this.treasuries);
         })
         .catch((error) => {
           console.log(error);
@@ -194,8 +200,19 @@ export default {
         })
         .catch((error) => {
           this.$notify({ type: "error", text: error.data?.message || error });
+          if (error.data?.errors) {
+            this.errors = error.data.errors
+          }
         });
     },
+    getErrors(key) {
+      return this.errors.filter(e => e.key === key)
+    },
+    getSelectClasses(key) {
+      if (this.getErrors(key).length > 0) return "select-error"
+
+      return ""
+    }
   },
 };
 </script>

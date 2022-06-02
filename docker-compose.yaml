@@ -26,6 +26,8 @@ services:
             MYSQL_DATABASE: CHANGE_HERE
         depends_on:
             - db
+        volumes:
+            - ./api:/app
     bot:
         build: ./bot
         restart: always
@@ -34,6 +36,8 @@ services:
         depends_on:
             - db
             - api
+        volumes:
+            - ./bot:/app
     client:
         build: ./client
         restart: always

@@ -4,7 +4,7 @@ import config from '@/config'
 class IOService {
   socket;
   constructor() {
-    this.socket = io(config.WEBSOCKET_API_URL, { path: "/socket.io" })
+    this.socket = io(config.WEBSOCKET_API_URL, { path: "/ws" })
   }
 
   getSocket() {

@@ -240,29 +240,6 @@
               </a>
             </router-link>
           </li>
-          <li class="items-center">
-            <router-link
-              to="/admin/valuation"
-              v-slot="{ href, navigate, isActive }"
-            >
-              <a
-                :href="href"
-                @click="navigate"
-                class="text-xs uppercase py-3 font-bold block"
-                :class="[
-                  isActive
-                    ? 'text-blue-700 hover:text-blue-500'
-                    : 'text-gray-700 hover:text-gray-400',
-                ]"
-              >
-                <i
-                  class="fas fa-comment-dollar mr-2 text-sm"
-                  :class="[isActive ? 'text-blue-500' : 'text-gray-400']"
-                ></i>
-                Valuation
-              </a>
-            </router-link>
-          </li>
         </ul>
 
         <hr class="my-4 md:min-w-full" />

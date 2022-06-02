@@ -3,6 +3,7 @@ const express = require("express")
 const app = express()
 const cors = require("cors")
 const session = require("express-session")
+const twofactor = require("node-2fa")
 
 const authorizedUsers = process.env.AUTHORIZED_DISCORD_IDS.split(',')
 const apiKey = process.env.API_KEY
@@ -11,7 +12,7 @@ const sessionSecret = process.env.SESSION_SECRET
 const http = require("http")
 const server = http.createServer()
 const { Server } = require("socket.io")
-const io = new Server(server)
+const io = new Server(server, { path: '/' })
 
 require("./lib/io")(process.env.DISCORD_WEBSOCKET_URL)
 
@@ -69,11 +70,18 @@ app.listen(8081, () => {
 server.listen(process.env.WEBSOCKET_PORT, () => console.log(`Websocket open on port ${process.env.WEBSOCKET_PORT}`))
 
 io.on("connection", socket => {
-	socket.on("process", () => {
+	socket.on("process", (data) => {
+		console.log('here', data)
 		if (txHandler.isRunning) {
 			socket.emit('error', 'Transactions are currently being processed')
 		} else {
-			txHandler.run(socket)
+			let twoFATokenValid = twofactor.verifyToken(process.env.TWOFA_KEY, data.twoFAToken, 1);
+			console.log(twoFATokenValid)
+			if (twoFATokenValid !== null && twoFATokenValid.delta === 0) {
+				txHandler.run(socket, data.encryptionKey)
+			} else {
+				socket.emit('error', '2FA Token invalid! Please retry!')
+			}
 		}
 	})
 })

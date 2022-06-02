@@ -145,6 +145,19 @@
         </div>
       </div>
     </div>
+
+
+    <confirm-dialogue ref="confirmDialogue">
+      <p class="my-4 text-sm">Please provide the encryption key and 2FA token</p>
+      <div class="mt-6">
+        <FormLabel for="encryptionKey">Encryption Key</FormLabel>
+        <FormInput v-model="encryptionKey" id="encryptionKey" />
+      </div>
+      <div class="mt-6">
+        <FormLabel for="twoFAToken">2FA Token</FormLabel>
+        <FormInput v-model="twoFAToken" id="twoFAToken" />
+      </div>
+    </confirm-dialogue>
   </div>
 </template>
 <script>
@@ -164,6 +177,9 @@ import "vue2-datepicker/index.css";
 import IOService from "@/services/io";
 import API from "@/services/api";
 import Multiselect from "vue-multiselect";
+import ConfirmDialogue from "@/components/Confirmation";
+import FormLabel from "@/components/Form/Label";
+import FormInput from "@/components/Form/Input";
 
 Vue.component("detail-row", ValuatedMessageDetail);
 
@@ -178,9 +194,9 @@ export default {
     ValuatedMessageDetail,
     ValuatedMessageStatusIcon,
     Multiselect,
-  },
-  created() {
-    console.log("c");
+    ConfirmDialogue,
+    FormLabel,
+    FormInput,
   },
   beforeMount() {
     this.io = new IOService();
@@ -196,12 +212,11 @@ export default {
     });
 
     socket.on("error", (message) => {
-      this.$notify({ type: "error", message });
+      this.transactionMessage = `Process Transactions`;
+      this.$notify({ type: "error", text: message });
     });
-    console.log("a");
   },
   mounted() {
-    console.log("g");
     this.$watch(
       (vm) => [vm.treasuriesLoaded, vm.dataTableLoaded],
       () => {
@@ -232,6 +247,8 @@ export default {
     return {
       io: null,
       transactionGraph: null,
+      twoFAToken: null,
+      encryptionKey: null,
       valueGraph: null,
       datepicker: null,
       searchFilter: {
@@ -500,9 +517,20 @@ export default {
         pageSize: perPage,
       };
     },
-    processTransactions() {
-      this.transactionMessage = "Processing";
-      this.io.getSocket().emit("process");
+    async processTransactions() {
+      const ok = await this.$refs.confirmDialogue.show({
+        title: "Process Transactions",
+        okButton: "Process",
+        inverted: false
+      });
+
+      if (ok) {
+        this.transactionMessage = "Processing";
+        this.io.getSocket().emit("process", {
+          encryptionKey: this.encryptionKey,
+          twoFAToken: this.twoFAToken
+        });
+      }
     },
   },
   beforeUnmount() {
