@@ -2,4 +2,6 @@
 volumes
 client/.env
 client/log
+report/.env
+report/log
 .env.*

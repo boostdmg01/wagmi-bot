@@ -1,22 +1,17 @@
 <template>
   <div class="bg-gray-50 min-h-screen">
-    <div v-if="$router.currentRoute.path !== '/valuated-messages'">
-      <notifications
-        classes="text-sm transition"
-        position="center top"
-        :max="3"
-      />
-      <loading :active="$root.isLoading"></loading>
-      <sidebar />
-      <div class="relative md:ml-64">
-        <Header :route="$route.name" />
-        <div class="px-4 md:px-10 mx-auto w-full">
-          <router-view />
-        </div>
+    <notifications
+      classes="text-sm transition"
+      position="center top"
+      :max="3"
+    />
+    <loading :active="$root.isLoading"></loading>
+    <sidebar />
+    <div class="relative md:ml-64">
+      <Header :route="$route.name" />
+      <div class="px-4 md:px-10 mx-auto w-full">
+        <router-view />
       </div>
-    </div>
-    <div v-else>
-      <router-view />
     </div>
   </div>
 </template>

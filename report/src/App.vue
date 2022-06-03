@@ -1,6 +1,7 @@
 <template>
-  <div class="treasury-crud">
-    <div class="flex flex-wrap flex-col items-center">
+  <div class="bg-gray-50 min-h-screen">
+      <loading :active="$root.isLoading"></loading>
+      <div class="flex flex-wrap flex-col items-center">
       <div class="w-full lg:w-8/12 my-6">
         <div class="flex justify-center my-6"><img src="@/assets/logo.png" class="mx-auto w-40 h-40" alt="WAG Media" title="WAG Media" /></div>
         <h2 class="text-xl font-semibold">Valuated Messages</h2>
@@ -69,9 +70,11 @@
     </div>
   </div>
       </div>
-    </div>
+  </div>
 </template>
 <script>
+import Loading from "vue-loading-overlay";
+import "vue-loading-overlay/dist/vue-loading.css";
 import moment from "moment";
 import Vue from "vue";
 import Chart from "chart.js/auto";
@@ -79,25 +82,26 @@ import Vuetable from "vuetable-2/src/components/Vuetable";
 import VuetablePagination from "vuetable-2/src/components/VuetablePagination";
 import VuetablePaginationInfo from "vuetable-2/src/components/VuetablePaginationInfo";
 import ValuatedMessageStatusIcon from "@/components/ValuatedMessageStatusIcon";
-import ValuatedMessageDetailPublic from "@/components/ValuatedMessageDetailPublic";
+import ValuatedMessageDetail from "@/components/ValuatedMessageDetail";
 import { interpolatePlasma } from "d3-scale-chromatic";
 import DatePicker from "vue2-datepicker";
 import "vue2-datepicker/index.css";
 import API from "@/services/api";
 import Multiselect from "vue-multiselect";
 
-Vue.component("detail-row-public", ValuatedMessageDetailPublic);
+Vue.component("detail-row-public", ValuatedMessageDetail);
 
 export default {
-  name: "ValuatedMessagesPublic",
+  name: "App",
   components: {
     DatePicker,
     Vuetable,
     VuetablePagination,
     VuetablePaginationInfo,
-    ValuatedMessageDetailPublic,
+    ValuatedMessageDetail,
     ValuatedMessageStatusIcon,
     Multiselect,
+    Loading,
   },
   mounted() {
     this.$watch(

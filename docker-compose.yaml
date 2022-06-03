@@ -64,3 +64,13 @@ services:
         depends_on:
             - api
             - bot
+    report:
+        build: ./report
+        restart: always
+        ports:
+            - 8082:8082
+        volumes:
+            - ./report/dist:/usr/share/nginx/html
+            - ./report/log/nginx:/var/log/nginx
+        depends_on:
+            - api

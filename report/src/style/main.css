@@ -1,0 +1,56 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+.multiselect__tags, .multiselect__single {
+    @apply bg-gray-50 border px-2.5 border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500;
+}
+
+.multiselect__tag {
+    @apply text-xs font-semibold inline-block py-1 px-2 uppercase rounded text-blue-600 bg-blue-200 pr-7;
+}
+
+.multiselect__tag .multiselect__tag-icon:hover {
+    @apply bg-blue-600;
+}
+
+.multiselect__tag-icon:after {
+    @apply text-current
+}
+
+.multiselect__tag-icon:hover:after {
+    @apply text-white
+}
+
+.multiselect__single {
+    @apply pl-0 text-gray-900 text-sm dark:text-white bg-transparent;
+}
+
+.multiselect__input {
+    @apply bg-transparent px-0 pt-0.5 text-gray-900 text-sm block w-full dark:placeholder-gray-400 dark:text-white;
+}
+
+.multiselect__element {
+    @apply text-sm;
+}
+
+.pagination > a {
+    margin-left: -1px;
+}
+
+.vuetable th {
+    @apply text-sm font-medium text-left text-gray-900 border-b px-6 py-3.5;
+}
+
+.vuetable td {
+    @apply text-sm px-6 text-left py-3 border-b;
+}
+
+.vuetable tr:nth-child(2n) {
+    @apply bg-gray-50;
+}
+
+.vuetable tr.vuetable-detail-row {
+    @apply bg-gray-200
+}

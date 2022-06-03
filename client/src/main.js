@@ -8,8 +8,6 @@ import './style/main.css'
 
 Vue.config.productionTip = false
 
-console.log(process.env.VUE_APP_TEST)
-
 Vue.use(Notifications)
 
 Vue.filter('capitalize', function (value) {

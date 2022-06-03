@@ -9,7 +9,7 @@ import TreasuryInsertUpdate from '@/views/incentivization/treasury/InsertUpdate'
 import EmojiOverview from '@/views/incentivization/emoji/Overview'
 import EmojiInsertUpdate from '@/views/incentivization/emoji/InsertUpdate'
 import ValuatedMessages from '@/views/data/ValuatedMessages'
-import ValuatedMessagesPublic from '@/views/data/ValuatedMessagesPublic'
+import PageNotFound from '@/views/PageNotFound'
 
 Vue.use(VueRouter)
 
@@ -86,9 +86,9 @@ const routes = [
     component: ValuatedMessages
   },
   {
-    path: '/valuated-messages',
-    name: 'Valuated Messages',
-    component: ValuatedMessagesPublic
+    path: "*",
+    name: '404',
+    component: PageNotFound
   }
 ]
 
