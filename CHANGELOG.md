@@ -1,5 +1,13 @@
 # CHANGELOG
 
+## 1.0.4
+### Breaking Changes
+* Splitted public reportings page from admin dashboard, now living in a seperate container
+
+## 1.0.3
+### Breaking Changes
+* Refactored environment variables for easier configuration and deployment
+
 ## 1.0.2
 ### Bugfixes
 * API: Validation fixed
