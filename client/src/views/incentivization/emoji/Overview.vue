@@ -129,7 +129,6 @@
 </template>
 <script>
 import API from "@/services/api";
-import config from "@/config";
 import Vuetable from "vuetable-2/src/components/Vuetable";
 import VuetablePagination from "vuetable-2/src/components/VuetablePagination";
 import VuetablePaginationInfo from "vuetable-2/src/components/VuetablePaginationInfo";
@@ -145,7 +144,7 @@ export default {
   },
   data() {
     return {
-      apiUrl: config.API_URL + "emoji/all",
+      apiUrl: process.env.VUE_APP_API_URL + "emoji/all",
       fields: [
         {
           name: "__slot:emoji",

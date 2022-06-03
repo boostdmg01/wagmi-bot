@@ -19,7 +19,7 @@ exports.checkDirectorElevation = async (client, treasuryElevations, messageReact
 					const embed = new Discord.MessageEmbed()
 						.setColor('#0099ff')
 						.setAuthor(`${messageReaction.message.author.username} in  #${messageReaction.message.channel.name}`)
-						.setURL(`https://discord.com/channels/${process.env.GUILD_ID}/${messageReaction.message.channelId}/${messageReaction.message.id}`)
+						.setURL(`https://discord.com/channels/${process.env.BOT_GUILD_ID}/${messageReaction.message.channelId}/${messageReaction.message.id}`)
 						.setTitle('Top ' + (isContent ? 'Content' : 'Story') + ' <:' + emoji.identifier + '>')
 						.setDescription(messageReaction.message.content)
 						.setTimestamp()

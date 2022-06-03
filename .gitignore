@@ -1,2 +1,5 @@
 .DS_STORE
 volumes
+client/.env
+client/log
+.env.*

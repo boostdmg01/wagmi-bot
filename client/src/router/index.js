@@ -10,7 +10,6 @@ import EmojiOverview from '@/views/incentivization/emoji/Overview'
 import EmojiInsertUpdate from '@/views/incentivization/emoji/InsertUpdate'
 import ValuatedMessages from '@/views/data/ValuatedMessages'
 import ValuatedMessagesPublic from '@/views/data/ValuatedMessagesPublic'
-import config from '@/config.json'
 
 Vue.use(VueRouter)
 
@@ -18,13 +17,13 @@ const routes = [
   {
     path: '/admin',
     beforeEnter() {
-      window.location.href = config.DISCORD_OAUTH_URL
+      window.location.href = process.env.VUE_APP_DISCORD_OAUTH_URL
     }
   },
   {
     path: '/admin/login',
     beforeEnter() {
-      window.location.href = config.DISCORD_OAUTH_URL
+      window.location.href = process.env.VUE_APP_DISCORD_OAUTH_URL
     }
   },
   {

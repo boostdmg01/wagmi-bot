@@ -75,7 +75,6 @@
 import moment from "moment";
 import Vue from "vue";
 import Chart from "chart.js/auto";
-import config from "@/config";
 import Vuetable from "vuetable-2/src/components/Vuetable";
 import VuetablePagination from "vuetable-2/src/components/VuetablePagination";
 import VuetablePaginationInfo from "vuetable-2/src/components/VuetablePaginationInfo";
@@ -161,7 +160,7 @@ export default {
       oldQueryParams: null,
       currentQueryParams: null,
       rerenderGraphs: true,
-      apiUrl: config.API_URL + "valuation/public",
+      apiUrl: process.env.VUE_APP_API_URL + "valuation/public",
       fields: [
         {
           name: "source",

@@ -11,9 +11,9 @@ const API = require("./lib/api")
 const { verification } = require("./commands/verification")
 const { checkDirectorElevation } = require("./commands/director_elevation")
 
-const botToken = process.env.TOKEN
-const prefix = process.env.PREFIX
-const guildId = process.env.GUILD_ID
+const botToken = process.env.BOT_TOKEN
+const prefix = process.env.BOT_PREFIX
+const guildId = process.env.BOT_GUILD_ID
 
 const client = new Discord.Client({
 	partials: ["MESSAGE", "CHANNEL", "REACTION", "USER"],
@@ -31,7 +31,7 @@ client.once("ready", async () => {
 	guild = await client.guilds.fetch(guildId)
 	console.log(`Logged in as ${client.user.tag}!`)
 
-	server.listen(process.env.WEBSOCKET_PORT_DISCORD, () => console.log(`Websocket open on port ${process.env.WEBSOCKET_PORT_DISCORD}`))
+	server.listen(8085, () => console.log(`Websocket open on port 8085`))
 
 	await API.loadConfiguration()
 

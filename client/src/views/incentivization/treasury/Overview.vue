@@ -119,7 +119,6 @@
 </template>
 <script>
 import API from "@/services/api";
-import config from "@/config";
 import Vuetable from "vuetable-2/src/components/Vuetable";
 import VuetablePagination from "vuetable-2/src/components/VuetablePagination";
 import VuetablePaginationInfo from "vuetable-2/src/components/VuetablePaginationInfo";
@@ -138,7 +137,7 @@ export default {
   data() {
     return {
       searchFilter: "",
-      apiUrl: config.API_URL + "treasury/all",
+      apiUrl: process.env.VUE_APP_API_URL + "treasury/all",
       fields: [
         {
           name: "name",

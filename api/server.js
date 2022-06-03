@@ -5,16 +5,16 @@ const cors = require("cors")
 const session = require("express-session")
 const twofactor = require("node-2fa")
 
-const authorizedUsers = process.env.AUTHORIZED_DISCORD_IDS.split(',')
+const authorizedUsers = process.env.API_AUTHORIZED_DISCORD_IDS.split(',')
 const apiKey = process.env.API_KEY
-const sessionSecret = process.env.SESSION_SECRET
+const sessionSecret = process.env.API_SESSION_SECRET
 
 const http = require("http")
 const server = http.createServer()
 const { Server } = require("socket.io")
 const io = new Server(server, { path: '/' })
 
-require("./lib/io")(process.env.DISCORD_WEBSOCKET_URL)
+require("./lib/io")("ws://bot:8085/")
 
 const txHandler = require("./lib/txhandler")
 
@@ -67,7 +67,7 @@ app.listen(8081, () => {
 	console.log("Server is running on port 8081.")
 })
 
-server.listen(process.env.WEBSOCKET_PORT, () => console.log(`Websocket open on port ${process.env.WEBSOCKET_PORT}`))
+server.listen(8086, () => console.log(`Websocket open on port 8086`))
 
 io.on("connection", socket => {
 	socket.on("process", (data) => {
@@ -75,7 +75,7 @@ io.on("connection", socket => {
 		if (txHandler.isRunning) {
 			socket.emit('error', 'Transactions are currently being processed')
 		} else {
-			let twoFATokenValid = twofactor.verifyToken(process.env.TWOFA_KEY, data.twoFAToken, 1);
+			let twoFATokenValid = twofactor.verifyToken(process.env.API_TWOFA_KEY, data.twoFAToken, 1);
 			console.log(twoFATokenValid)
 			if (twoFATokenValid !== null && twoFATokenValid.delta === 0) {
 				txHandler.run(socket, data.encryptionKey)

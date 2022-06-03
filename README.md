@@ -15,14 +15,14 @@ If you don't have a discord yet, create a new one and save the guildId as **DISC
 
 Go to [https://discord.com/developers](https://discord.com/developers/)/ and set up your develper account. After setting up your account click on "New Application". Give your application a name and save. Upload an app icon in "General Information" that will be used for the OAuth login.
 
-Navigate to OAuth2 and save the Client ID as **DISCORD_CLIENT_ID** and Client Secret as **DISCORD_CLIENT_SECRET**. You will need to add a redirect now and save it as **DISCORD_REDIRECT_URI**. This is your desired URL with the following path: **/api/discord/login**
+Navigate to OAuth2 and save the Client ID as **API_DISCORD_CLIENT_ID** and Client Secret as **API_DISCORD_CLIENT_SECRET**. You will need to add a redirect now and save it as **API_DISCORD_REDIRECT_URI**. This is your desired URL with the following path: **/api/discord/login**
 Example: http://localhost:8080/api/discord/login
 
 Click on save changes when a prompt does show up.
 
-Now navigate to the subpage "URL Generator". Checkmark the "identify" scope and select your redirect from the dropdown. Copy and save the generated url as **DISCORD_OAUTH_LINK**.
+Now navigate to the subpage "URL Generator". Checkmark the "identify" scope and select your redirect from the dropdown. Copy and save the generated url as **VUE_APP_DISCORD_OAUTH_LINK**.
 
-Navigate to "Bot" and click on "Add a bot". You can now upload a profile picture and give the bot a username that will displayed in the server. Copy the token and save it as **TOKEN**. Set "Public Bot" to "No" and "Server Member Intents" to "Yes".
+Navigate to "Bot" and click on "Add a bot". You can now upload a profile picture and give the bot a username that will displayed in the server. Copy the token and save it as **BOT_TOKEN**. Set "Public Bot" to "No" and "Server Member Intents" to "Yes".
 
 ### Invite Bot to Server
 
@@ -53,37 +53,27 @@ $ node api/2fa.js
 
 ## Application Configuration
 
-### client/src/config.json
 
-Add your saved information from preparation in here:\
-**API_URL** -  Your URL suffixed with /api/ (ex: http://localhost/api/)\
-**WEBSOCKET_API_URL** - Your URL with trailing slash (ex: http://localhost/) \
-**DISCORD_OAUTH_LINK** - Generated Discord OAuth Link with identify scope\
+Add your saved information from preparation in the .env file in the project root:
 
-### api/.env
-
-Add your saved information from preparation in here:\
 **API_KEY** - API Key needed for requests to be processed\
-**AUTHORIZED_DISCORD_IDS** - Discord User Ids which are eligible for using the admin frontend (comma-seperated) \
-**DISCORD_CLIENT_ID** - Discord Application Client ID\
-**DISCORD_CLIENT_SECRET** - Discord Application Client Secret\
-**DISCORD_REDIRECT_URI** - Redirect URL to Backend API for authentication (ex: http://localhost:8080/api/discord/login) \
-**DISCORD_GUILD_ID** - Guild ID of your server\
-**DISCORD_BOT_TOKEN** - Your Discord bot token\
-**FRONTEND_URL** - Redirect after login (ex: http://localhost:8080/admin/valuated-messages) \
-**SESSION_SECRET** - Secret key for server sessions\
-**TWOFA_KEY** - Secret key provided from previous step
-
-### bot/.env
-
-Add your saved information from preparation in here:\
-**TOKEN** - Your Discord bot token\
-**API_TOKEN** - same API Key provided in api/.env\
-**GUILD_ID** - Your Discord guild id\
-**PREFIX** - Prefix for the discord command \
-
-### docker-compose.yaml
-Change the mysql credentials to whatever you like. Do not change the ports!
+**API_AUTHORIZED_DISCORD_IDS** - Discord User Ids which are eligible for using the admin frontend (comma-seperated) \
+**API_DISCORD_CLIENT_ID** - Discord Application Client ID\
+**API_DISCORD_CLIENT_SECRET** - Discord Application Client Secret\
+**API_DISCORD_REDIRECT_URI** - Redirect URL to Backend API for authentication (ex: http://localhost:8080/api/discord/login) \
+**API_FRONTEND_URL** - Redirect after login (ex: http://localhost:8080/admin/valuated-messages) \
+**API_SESSION_SECRET** - Secret key for server sessions\
+**API_TWOFA_KEY** - Secret key provided from previous step
+**BOT_TOKEN** - Your Discord bot token\
+**BOT_GUILD_ID** - Your Discord guild id\
+**BOT_PREFIX** - Prefix for the discord command \
+**DATABASE_ROOT_PASSWORD** - MySQL Root Password to use \
+**DATABASE_PASSWORD** - MySQL Password to use \
+**DATABASE_USER** - MySQL Username to use \
+**DATABASE_DBNAME** - MySQL Database name to use \
+**VUE_APP_API_URL** -  Your URL suffixed with /api/ (ex: http://localhost/api/)\
+**VUE_APP_WEBSOCKET_API_URL** - Your URL with trailing slash (ex: http://localhost/) \
+**VUE_APP_DISCORD_OAUTH_LINK** - Generated Discord OAuth Link with identify scope\
 
 ## Build client and start docker containers
 Build client:

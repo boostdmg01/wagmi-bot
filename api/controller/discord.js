@@ -31,10 +31,10 @@ exports.getChannels = async (req, res) => {
 	if (cachedChannels) {
 		res.status(200).send(cachedChannels)
 	} else {
-		axios.get(`https://discord.com/api/guilds/${process.env.DISCORD_GUILD_ID}/channels`, {
+		axios.get(`https://discord.com/api/guilds/${process.env.BOT_GUILD_ID}/channels`, {
 			headers: {
 				"User-Agent": "DiscordBot (wagmi, 1.0)",
-				"Authorization": `Bot ${process.env.DISCORD_BOT_TOKEN}`
+				"Authorization": `Bot ${process.env.BOT_TOKEN}`
 			}
 		}).then(response => {
 
@@ -53,10 +53,10 @@ exports.getEmojis = async (req, res) => {
 	if (cachedEmojis) {
 		res.status(200).send(cachedEmojis)
 	} else {
-		axios.get(`https://discord.com/api/guilds/${process.env.DISCORD_GUILD_ID}/emojis`, {
+		axios.get(`https://discord.com/api/guilds/${process.env.BOT_GUILD_ID}/emojis`, {
 			headers: {
 				"User-Agent": "DiscordBot (wagmi, 1.0)",
-				"Authorization": `Bot ${process.env.DISCORD_BOT_TOKEN}`
+				"Authorization": `Bot ${process.env.BOT_TOKEN}`
 			}
 		}).then(response => {
 			cache.write('emojis', response.data)
@@ -72,10 +72,10 @@ exports.getRoles = async (req, res) => {
 	if (cachedRoles) {
 		res.status(200).send(cachedRoles)
 	} else {
-		axios.get(`https://discord.com/api/guilds/${process.env.DISCORD_GUILD_ID}/roles`, {
+		axios.get(`https://discord.com/api/guilds/${process.env.BOT_GUILD_ID}/roles`, {
 			headers: {
 				"User-Agent": "DiscordBot (wagmi, 1.0)",
-				"Authorization": `Bot ${process.env.DISCORD_BOT_TOKEN}`
+				"Authorization": `Bot ${process.env.BOT_TOKEN}`
 			}
 		}).then(response => {
 			cache.write('roles', response.data)
@@ -98,10 +98,10 @@ exports.getMembers = async (req, res) => {
 		try {
 			let currentData = []
 			do {
-				const response = await axios.get(`https://discord.com/api/guilds/${process.env.DISCORD_GUILD_ID}/members`, {
+				const response = await axios.get(`https://discord.com/api/guilds/${process.env.BOT_GUILD_ID}/members`, {
 					headers: {
 						"User-Agent": "DiscordBot (wagmi, 1.0)",
-						"Authorization": `Bot ${process.env.DISCORD_BOT_TOKEN}`
+						"Authorization": `Bot ${process.env.BOT_TOKEN}`
 					},
 					params: {
 						limit: 1000,
@@ -133,11 +133,11 @@ exports.login = async (req, res) => {
 		res.send("No access code")
 	} else {
 		const formData = new URLSearchParams()
-		formData.append("client_id", process.env.DISCORD_CLIENT_ID)
-		formData.append("client_secret", process.env.DISCORD_CLIENT_SECRET)
+		formData.append("client_id", process.env.API_DISCORD_CLIENT_ID)
+		formData.append("client_secret", process.env.API_DISCORD_CLIENT_SECRET)
 		formData.append("grant_type", "authorization_code")
-		formData.append("redirect_uri", process.env.DISCORD_REDIRECT_URI)
-		formData.append("scopes", process.env.DISCORD_SCOPES)
+		formData.append("redirect_uri", process.env.API_DISCORD_REDIRECT_URI)
+		formData.append("scopes", "identify")
 		formData.append("code", accessCode)
 
 		axios.post("https://discord.com/api/oauth2/token", formData, {
@@ -159,7 +159,7 @@ exports.login = async (req, res) => {
 						req.session.data.discord_username = username
 						req.session.data.discord_avatar_id = userResponse.data.avatar
 
-						res.redirect(process.env.FRONTEND_URL)
+						res.redirect(process.env.API_FRONTEND_URL)
 					}).catch(e => console.log(e.response))
 			}).catch(e => console.log('error', e))
 	}
@@ -167,7 +167,7 @@ exports.login = async (req, res) => {
 
 exports.logout = async (req, res) => {
 	req.session.data = {}
-	res.redirect(process.env.FRONTEND_URL)
+	res.redirect(process.env.API_FRONTEND_URL)
 }
 
 exports.clear = async (req, res) => {

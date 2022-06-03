@@ -1,7 +1,7 @@
 const axios = require("axios")
 require("dotenv").config()
 
-axios.defaults.headers.common = { 'Authorization': `Bearer ${process.env.API_TOKEN}` }
+axios.defaults.headers.common = { 'Authorization': `Bearer ${process.env.API_KEY}` }
 
 const API = function () {
 	this.config = {}

@@ -1,10 +1,9 @@
 import axios from 'axios'
-import config from '@/config.json'
 import router from '@/router/index'
 
 const API = function () {
     this.client = axios.create({
-        baseURL: config.API_URL
+        baseURL: process.env.VUE_APP_API_URL
     });
 
     this.request = async (endpoint, data = {}, method = 'GET') => {

@@ -164,7 +164,6 @@
 import moment from "moment";
 import Vue from "vue";
 import Chart from "chart.js/auto";
-import config from "@/config";
 import Vuetable from "vuetable-2/src/components/Vuetable";
 import VuetablePagination from "vuetable-2/src/components/VuetablePagination";
 import VuetablePaginationInfo from "vuetable-2/src/components/VuetablePaginationInfo";
@@ -281,7 +280,7 @@ export default {
       currentQueryParams: null,
       rerenderGraphs: true,
       transactionMessage: "Process Transactions",
-      apiUrl: config.API_URL + "valuation/all",
+      apiUrl: process.env.VUE_APP_API_URL + "valuation/all",
       fields: [
         {
           name: "username",
