@@ -151,7 +151,7 @@ export default {
         },
         {
           value: 2,
-          label: "Paid",
+          label: "Transaction submitted",
         },
         {
           value: 3,

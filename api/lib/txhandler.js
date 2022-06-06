@@ -4,13 +4,14 @@ const Web3 = require('web3')
 const { ApiPromise, Keyring, WsProvider } = require('@polkadot/api')
 const polkadotUtil = require("@polkadot/util-crypto")
 const crypto = require("./crypto")
+const logger = require("./logger")
 
 /**
- * Transaction Handler which submits transactions based on valuated messages and royalities
+ * Transaction Handler which submits transactions based on valuated messages and royalties
  * 
  * Status Values:
  * 1 - Pending
- * 2 - Paid
+ * 2 - Transaction submitted
  * 3 - Insufficient Balance in payout wallet
  * 4 - General Transaction Error
  * 5 - No receiver address specified
@@ -68,7 +69,7 @@ class TransactionHandler {
     /**
      *  Start the processing transactions
      * 
-     * @param io -  client socket receiving status updates
+     * @param io - client socket receiving status updates
      * @param encryptionKey - encryptionKey sent by client for decrypting mnemonics/private keys
      */
     async run(io, encryptionKey) {
@@ -77,11 +78,11 @@ class TransactionHandler {
         this.currentTransactionIndex = 1
         this.encryptionKey = encryptionKey
 
-        /** Get all valuated messages and royalities to process **/
-        let [valuatedMessages] = await sql.query(`SELECT valuation.*, user.evmAddress, user.substrateAddress, treasury.coinName, treasury.name, treasury.type, treasury.rpcUrl, treasury.chainPrefix, treasury.mnemonic, treasury.isNative, treasury.parachainType, treasury.tokenAddress, treasury.tokenDecimals, treasury.chainTypes, treasury.privateKey, treasury.royalityEnabled, treasury.royalityAddress, treasury.royalityPercentage, treasury.assetId, treasury.sendMinBalance, treasury.sendExistentialDeposit FROM valuation LEFT JOIN treasury ON (treasury.id = valuation.treasuryId) LEFT JOIN user ON (user.id = valuation.userId) WHERE transactionHash IS NULL ORDER BY valuation.timestamp ASC`)
-        let [royalities] = await sql.query(`SELECT valuation.*, treasury.coinName, treasury.name, treasury.type, treasury.rpcUrl, treasury.chainPrefix, treasury.mnemonic, treasury.isNative, treasury.parachainType, treasury.tokenAddress, treasury.tokenDecimals, treasury.chainTypes, treasury.privateKey, treasury.royalityEnabled, treasury.royalityAddress, treasury.royalityPercentage, treasury.assetId, treasury.sendMinBalance, treasury.sendExistentialDeposit FROM valuation LEFT JOIN treasury ON (treasury.id = valuation.treasuryId) WHERE royalityValue IS NOT NULL AND royalityTransactionHash IS NULL ORDER BY valuation.timestamp ASC`)
+        /** Get all valuated messages and royalties to process **/
+        let [valuatedMessages] = await sql.query(`SELECT valuation.*, user.evmAddress, user.substrateAddress, treasury.coinName, treasury.name, treasury.type, treasury.rpcUrl, treasury.chainPrefix, treasury.mnemonic, treasury.isNative, treasury.parachainType, treasury.tokenAddress, treasury.tokenDecimals, treasury.chainOptions, treasury.privateKey, treasury.royaltyEnabled, treasury.royaltyAddress, treasury.royaltyPercentage, treasury.assetId, treasury.sendMinBalance, treasury.sendExistentialDeposit FROM valuation LEFT JOIN treasury ON (treasury.id = valuation.treasuryId) LEFT JOIN user ON (user.id = valuation.userId) WHERE transactionHash IS NULL ORDER BY valuation.timestamp ASC`)
+        let [royalties] = await sql.query(`SELECT valuation.*, treasury.coinName, treasury.name, treasury.type, treasury.rpcUrl, treasury.chainPrefix, treasury.mnemonic, treasury.isNative, treasury.parachainType, treasury.tokenAddress, treasury.tokenDecimals, treasury.chainOptions, treasury.privateKey, treasury.royaltyEnabled, treasury.royaltyAddress, treasury.royaltyPercentage, treasury.assetId, treasury.sendMinBalance, treasury.sendExistentialDeposit FROM valuation LEFT JOIN treasury ON (treasury.id = valuation.treasuryId) WHERE royaltyValue IS NOT NULL AND royaltyTransactionHash IS NULL ORDER BY valuation.timestamp ASC`)
 
-        this.currentTransactionTotal = valuatedMessages.length + royalities.length
+        this.currentTransactionTotal = valuatedMessages.length + royalties.length
 
         /** Return amount of actions to process to give client feedback **/
         this.currentIo.emit('processing', { current: this.currentTransactionIndex, total: this.currentTransactionTotal })
@@ -91,9 +92,9 @@ class TransactionHandler {
             await this.handleValuatedMessages(valuatedMessages)
         }
 
-        /** Handle Royalitites of valuated messages **/
-        if (royalities.length > 0) {
-            await this.handleRoyalities(royalities)
+        /** Handle royalties of valuated messages **/
+        if (royalties.length > 0) {
+            await this.handleRoyalties(royalties)
         }
 
         this.isRunning = false
@@ -107,9 +108,9 @@ class TransactionHandler {
      * @param rows - entities to be processed
      */
     async handleValuatedMessages(rows) {
-        console.log('Transaction Handler', `Handling ${rows.length} message valuations`)
+        logger.info(`Transaction Handler: Handling %d message valuations`, rows.length)
         for (let row of rows) {
-            console.log('Transaction Handler', `Handling ${row.messageId} by ${row.username} valuated with ${row.value} ${row.name}`)
+            logger.info(`Transaction Handler: Handling valuation Id %d valuated with %f %s`, row.id, row.value, row.coinName)
 
             /** Check if receiver has submitted a payout address (pre-validation done by the bot), if not set status = 5 **/
             if ((row.type === 'substrate' && (row.substrateAddress === null || row.substrateAddress === '')) || (row.type === 'evm' && (row.evmAddress === null || row.evmAddress === ''))) {
@@ -122,7 +123,7 @@ class TransactionHandler {
                 if (row.type === 'substrate') {
                     /** Process Substrate Transaction */
                     let { transactionHash, minBalanceBumped, sentExistentialDeposit } = await this.submitSubstrateTransaction(row).catch(e => { throw e })
-                    
+
                     if (transactionHash !== null) {
                         /** Main Transaction successful; set status = 2, save txHash and timestamp and set flags if the balance has been bumped to minBalance and if existential deposit balance has been sent  **/
                         await sql.execute('UPDATE valuation SET status = ?, transactionHash = ?, transactionTimestamp = ?, minBalanceBumped = ?, sentExistentialDeposit = ? WHERE id = ?', [2, transactionHash, Math.floor(Date.now() / 1000), minBalanceBumped, sentExistentialDeposit, row.id])
@@ -132,8 +133,8 @@ class TransactionHandler {
                         /** Inform user of the current payout **/
                         botIo.emit('send', {
                             userId: row.userId,
-                            message: `Your message has been valuated with ${row.value} ${row.coinName}, paid out to: ${address}
-    ${row.messageLink}`
+                            message: `Your message has been valuated with ${row.value} ${row.coinName}, submitted to: ${address}
+${row.messageLink}`
                         })
                     }
                 } else {
@@ -147,21 +148,24 @@ class TransactionHandler {
                         /** Inform user of the current payout */
                         botIo.emit('send', {
                             userId: row.userId,
-                            message: `Your message has been valuated with ${row.value} ${row.coinName}, paid out to: ${row.evmAddress}
-    ${row.messageLink}`
+                            message: `Your message has been valuated with ${row.value} ${row.coinName}, submitted to: ${row.evmAddress}
+${row.messageLink}`
                         })
                     }
                 }
-            } catch (e) {
-                console.log(e)
+
+                logger.info('Transaction Handler: Transaction for valuation Id %d submitted: %s', row.id, transactionHash)
+            } catch (err) {
+                logger.error("Transaction Handler: Error on processing valuation Id %d: %O", row.id, err)
+
                 /** Something went wrong, set status for given error message **/
                 let status = 4
-                if (e.message) {
-                    if (e.message === "Insufficient Balance") {
+                if (err.message) {
+                    if (err.message === "Insufficient Balance") {
                         status = 3
-                    } else if (e.message === "Insufficient Asset Balance") {
+                    } else if (err.message === "Insufficient Asset Balance") {
                         status = 6
-                    } else if (e.message === "Invalid encryption key") {
+                    } else if (err.message === "Invalid encryption key") {
                         status = 7
                     }
                 }
@@ -176,32 +180,35 @@ class TransactionHandler {
         }
     }
     /**
-     * Handle transactions for royalitites of valuated messages
+     * Handle transactions for royalties of valuated messages
      * 
      * @param rows - entities to be processed
      */
-    async handleRoyalities(rows) {
-        console.log('Transaction Handler', `Handling ${rows.length} royalities`)
+    async handleRoyalties(rows) {
+        logger.info(`Transaction Handler: Handling %d royalties`, rows.length)
         for (let row of rows) {
-            console.log('Transaction Handler', `Handling royality: ${row.messageId}`)
+            logger.info(`Transaction Handler: Handling royalty for valuation Id %d`, row.id)
 
             try {
                 if (row.type === 'substrate') {
                     /** Process Substrate Transaction */
                     let { transactionHash, minBalanceBumped, sentExistentialDeposit } = await this.submitSubstrateTransaction(row, true).catch(e => { throw e })
 
-                    /** Main Transaction successful; set royality status = 2, save royality txHash and royality timestamp and set royality flags if the balance has been bumped to minBalance and if existential deposit balance has been sent  **/
-                    await sql.execute('UPDATE valuation SET royalityStatus = ?, royalityTransactionHash = ?,royalityTransactionTimestamp = ?, royalityMinBalanceBumped = ?, royalitySentExistentialDeposit = ? WHERE id = ?', [2, transactionHash, Math.floor(Date.now() / 1000), minBalanceBumped, sentExistentialDeposit, row.id])
+                    /** Main Transaction successful; set royalty status = 2, save royalty txHash and royalty timestamp and set royalty flags if the balance has been bumped to minBalance and if existential deposit balance has been sent  **/
+                    await sql.execute('UPDATE valuation SET royaltyStatus = ?, royaltyTransactionHash = ?,royaltyTransactionTimestamp = ?, royaltyMinBalanceBumped = ?, royaltySentExistentialDeposit = ? WHERE id = ?', [2, transactionHash, Math.floor(Date.now() / 1000), minBalanceBumped, sentExistentialDeposit, row.id])
                 } else {
                     /** Process Substrate Transaction */
                     let transactionHash = await this.submitEVMTransaction(row, true).catch(e => { throw e })
 
-                    /** Main Transaction successful; set royality status = 2, save royality txHash and royality timestamp  **/
-                    await sql.execute('UPDATE valuation SET royalityStatus = ?, royalityTransactionHash = ?,royalityTransactionTimestamp = ? WHERE id = ?', [2, transactionHash, Math.floor(Date.now() / 1000), row.id])
+                    /** Main Transaction successful; set royalty status = 2, save royalty txHash and royalty timestamp  **/
+                    await sql.execute('UPDATE valuation SET royaltyStatus = ?, royaltyTransactionHash = ?,royaltyTransactionTimestamp = ? WHERE id = ?', [2, transactionHash, Math.floor(Date.now() / 1000), row.id])
                 }
+
+                logger.info('Transaction Handler: Royalty transaction for valuation Id %d submitted: %s', row.id, transactionHash)
             } catch (e) {
-                console.log(e)
-                /** Something went wrong, set royality status for given error message **/
+                logger.error("Transaction Handler: Error on processing royalty for valuation Id %d: %O", row.id, err)
+
+                /** Something went wrong, set royalty status for given error message **/
                 let status = 4
                 if (e.message) {
                     if (e.message === "Insufficient Balance") {
@@ -213,7 +220,7 @@ class TransactionHandler {
                     }
                 }
 
-                await sql.execute('UPDATE valuation SET royalityStatus = ? WHERE id = ?', [status, row.id])
+                await sql.execute('UPDATE valuation SET royaltyStatus = ? WHERE id = ?', [status, row.id])
             }
 
             this.currentTransactionIndex++
@@ -225,24 +232,37 @@ class TransactionHandler {
     /**
      * Submit a substrate transaction
      * 
-     * @param data - entity data for valuated messages/royality fee
-     * @param royality - is a royality transaction
+     * @param data - entity data for valuated messages/royalty fee
+     * @param royalty - is a royalty transaction
      * @returns 
      */
-    async submitSubstrateTransaction(data, royality = false) {
+    async submitSubstrateTransaction(data, royalty = false) {
         /** Define provder details for node connection, without retrying on error **/
         const wsProvider = new WsProvider(data.rpcUrl, 0)
         try {
             const keyRing = new Keyring({ type: 'sr25519' })
 
             let options = {}
-            /** Optional Types that need to be specified for specific chains **/
-            if (data.chainTypes !== null && data.chainTypes !== '') {
-                options.types = JSON.parse(data.chainTypes)
+            let chainOptions = {}
+
+            /** Options need to be specified for specific chains **/
+            if (data.chainOptions !== null && data.chainOptions !== '') {
+                chainOptions = JSON.parse(data.chainOptions)
+            }
+
+            if (!chainOptions.types) {
+                chainOptions.types = {}
+            }
+
+            if (!chainOptions.options) {
+                chainOptions.options = { tip: 0 }
             }
 
             options.provider = wsProvider
             options.throwOnConnect = true
+            options.types = chainOptions.types
+
+            const tip = Web3.utils.toBN(chainOptions.options?.tip ?? 0)
 
             let api = new ApiPromise(options)
 
@@ -267,63 +287,100 @@ class TransactionHandler {
             /** Set SS58 chain prefix **/
             keyRing.setSS58Format(data.chainPrefix)
 
-
             let value = data.value
-            if (royality) {
-                /** If it is royality transaction, use the royalityValue **/
-                value = data.royalityValue
+            if (royalty) {
+                /** If it is royalty transaction, use the royaltyValue **/
+                value = data.royaltyValue
             } else {
-                /** Otherwise use the normal value and substract the royalityValue if specified **/
-                if (data.royalityValue) value -= data.royalityValue
+                /** Otherwise use the normal value and substract the royaltyValue if specified **/
+                if (data.royaltyValue) value -= data.royaltyValue
             }
 
-            /** reeiverAddress defaults to treasury royalityAddress **/
-            let receiverAddress = data.royalityAddress
-            if (!royality) {
-                /** If not a royality transaction, receiverAddress is any substrate address submitted by the user **/
+            /** reeiverAddress defaults to treasury royaltyAddress **/
+            let receiverAddress = data.royaltyAddress
+            if (!royalty) {
+                /** If not a royalty transaction, receiverAddress is any substrate address submitted by the user **/
                 receiverAddress = data.substrateAddress
             }
 
             /** Flags if minBalance has been bumped and if existential depost has been sent **/
             let minBalanceBumped = 0
             let sentExistentialDeposit = 0
+            let transactionPromiseResolve = null
+            let transactionPromiseReject = null
+
+            /** Treasury setting, send existential deposit to receiver */
+            if (data.sendExistentialDeposit === 1) {
+                /** Get existential deposit constant **/
+                const existentialDeposit = api.consts.balances.existentialDeposit.toBn()
+
+                /** Get receiver balance and payout wallet balance **/
+                const receiverBalance = (await api.query.system.account(receiverAddress)).data.free.toBn()
+                const accountBalance = (await api.query.system.account(treasuryAccount.address)).data.free.toBn()
+
+                /** Receiver has not enough existential deposit balance, set flag for existential deposit being sent **/
+                if (existentialDeposit.gt(receiverBalance)) {
+                    sentExistentialDeposit = 1
+                    /** Payout wallet has not enough balance for transaction **/
+                    if (existentialDeposit.gte(accountBalance.sub(tip))) {
+                        throw new Error('Insufficient Balance')
+                    }
+
+                    let existentialTransactionPromise = new Promise(function (resolve, reject) {
+                        transactionPromiseResolve = resolve;
+                        transactionPromiseReject = reject;
+                    });
+
+                    /** Send existential deposit to receiver **/
+                    api.tx.balances.transferKeepAlive(polkadotUtil.encodeAddress(receiverAddress, data.chainPrefix), existentialDeposit).signAndSend(treasuryAccount, { ...chainOptions.options, nonce: -1 }, ({ status, txHash, dispatchError }) => {
+                        if (status.isInBlock || status.isFinalized) {
+                            if (!dispatchError) {
+                                transactionPromiseResolve(txHash.toHex())
+                            } else {
+                                transactionPromiseReject(new Error("Transaction Handler: Substrate Existential Deposit Transaction failed: " + dispatchError.toString()))
+                            }
+                        } else if (status.isInvalid || status.isRetracted || status.isDropped) {
+                            transactionPromiseReject(new Error("Transaction Handler: Substrate Existential Deposit Transaction failed: invalid transaction"))
+                        }
+                    })
+
+                    let existentialDepositTxHash = await existentialTransactionPromise
+
+                    logger.info("Transaction Handler: Substrate Existential Deposit Transaction submiited: %s", existentialDepositTxHash)
+                }
+            }
 
             if (data.parachainType === 0) {
                 /** Native Token **/
-
-                /** Treasury setting, send existential deposit to receiver */
-                if (data.sendExistentialDeposit === 1) {
-                    /** Get existential deposit constant **/
-                    const existentialDeposit = api.consts.balances.existentialDeposit.toBn()
-
-                    /** Get receiver balance and payout wallet balance **/
-                    const receiverBalance = (await api.query.system.account(receiverAddress)).data.free.toBn()
-                    const accountBalance = (await api.query.system.account(treasuryAccount.address)).data.free.toBn()
-
-                    /** Receiver has not enough existential deposit balance, set flag for existential deposit being sent **/
-                    if (existentialDeposit.gt(receiverBalance)) {
-                        sentExistentialDeposit = 1
-                        /** Payout wallet has not enough balance for transaction **/
-                        if (existentialDeposit.gte(accountBalance)) {
-                            throw new Error('Insufficient Balance')
-                        }
-
-                        /** Send existential deposit to receiver **/
-                        await api.tx.balances.transferKeepAlive(polkadotUtil.encodeAddress(receiverAddress, data.chainPrefix), existentialDeposit).signAndSend(treasuryAccount, { nonce: -1 })
-                    }
-                }
 
                 /** Calculate valuation amount to send to receiver **/
                 const fullAmount = Web3.utils.toBN(value * (10 ** tokenDecimals[0]))
 
                 /** Check if payout wallet has enough balance to send the transaction **/
                 const accountBalance = (await api.query.system.account(treasuryAccount.address)).data.free.toBn()
-                if (fullAmount.gte(accountBalance)) {
+                if (fullAmount.gte(accountBalance.sub(tip))) {
                     throw new Error(`Insufficient Balance`)
                 }
 
                 /** Send valuation amount to receiver **/
-                let transactionHash = (await api.tx.balances.transferKeepAlive(polkadotUtil.encodeAddress(receiverAddress, data.chainPrefix), fullAmount).signAndSend(treasuryAccount, { nonce: -1 })).toHex()
+                let transactionPromise = new Promise(function (resolve, reject) {
+                    transactionPromiseResolve = resolve;
+                    transactionPromiseReject = reject;
+                });
+
+                api.tx.balances.transferKeepAlive(polkadotUtil.encodeAddress(receiverAddress, data.chainPrefix), fullAmount).signAndSend(treasuryAccount, { ...chainOptions.options, nonce: -1 }, ({ status, txHash, dispatchError }) => {
+                    if (status.isInBlock || status.isFinalized) {
+                        if (!dispatchError) {
+                            transactionPromiseResolve(txHash.toHex())
+                        } else {
+                            transactionPromiseReject(new Error("Transaction Handler: Substrate Transaction failed: " + dispatchError.toString()))
+                        }
+                    } else if (status.isInvalid || status.isRetracted || status.isDropped) {
+                        transactionPromiseReject(new Error("Transaction Handler: Substrate Transaction failed: invalid transaction"))
+                    }
+                })
+
+                let transactionHash = await transactionPromise
 
                 await wsProvider.disconnect()
 
@@ -331,28 +388,6 @@ class TransactionHandler {
                 return { transactionHash, minBalanceBumped, sentExistentialDeposit }
             } else {
                 /** Asset */
-
-                /** Treasury setting, send existential deposit to receiver */
-                if (data.sendExistentialDeposit === 1) {
-                    /** Get existential deposit constant **/
-                    const existentialDeposit = api.consts.balances.existentialDeposit.toBn()
-
-                    /** Get receiver balance and payout wallet balance **/
-                    const receiverBalance = (await api.query.system.account(receiverAddress)).data.free.toBn()
-                    const accountBalance = (await api.query.system.account(treasuryAccount.address)).data.free.toBn()
-
-                    /** Receiver has not enough existential deposit balance, set flag for existential deposit being sent **/
-                    if (existentialDeposit.gt(receiverBalance)) {
-                        sentExistentialDeposit = 1
-                        /** Payout wallet has not enough balance for transaction **/
-                        if (existentialDeposit.gte(accountBalance)) {
-                            throw new Error('Insufficient Balance')
-                        }
-
-                        /** Send existential deposit to receiver **/
-                        await api.tx.balances.transferKeepAlive(polkadotUtil.encodeAddress(receiverAddress, data.chainPrefix), existentialDeposit).signAndSend(treasuryAccount, { nonce: -1 })
-                    }
-                }
 
                 /** Get asset decimals **/
                 const assetDecimals = (await api.query.assets.metadata(data.assetId)).decimals
@@ -374,9 +409,7 @@ class TransactionHandler {
                 if (data.sendMinBalance === 1 && assetMinBalance.gt(receiverAssetBalance)) {
                     /** No need to bump the amount if the valuation amount is already bigger than the asset min balance, otherwise set flag and bump amount to send to asset min balance **/
                     if (assetAmount.lte(assetMinBalance)) {
-    
                         minBalanceBumped = 1
-
                         assetAmountToSend = assetMinBalance
                     }
                 }
@@ -386,8 +419,25 @@ class TransactionHandler {
                     throw new Error(`Insufficient Asset Balance`)
                 }
 
+                let transactionPromise = new Promise(function (resolve, reject) {
+                    transactionPromiseResolve = resolve;
+                    transactionPromiseReject = reject;
+                });
+
                 /** Send amount to receiver **/
-                let transactionHash = (await api.tx.assets.transferKeepAlive(data.assetId, polkadotUtil.encodeAddress(receiverAddress, data.chainPrefix), assetAmountToSend).signAndSend(treasuryAccount, { nonce: -1 })).toHex()
+                api.tx.assets.transferKeepAlive(data.assetId, polkadotUtil.encodeAddress(receiverAddress, data.chainPrefix), assetAmountToSend).signAndSend(treasuryAccount, { ...chainOptions.options, nonce: -1 }, ({ status, txHash, dispatchError }) => {
+                    if (status.isInBlock || status.isFinalized) {
+                        if (!dispatchError) {
+                            transactionPromiseResolve(txHash.toHex())
+                        } else {
+                            transactionPromiseReject(new Error("Transaction Handler: Substrate Asset Transaction failed: " + dispatchError.toString()))
+                        }
+                    } else if (status.isInvalid || status.isRetracted || status.isDropped) {
+                        transactionPromiseReject(new Error("Transaction Handler: Substrate Asset Transaction failed: invalid transaction"))
+                    }
+                })
+
+                let transactionHash = await transactionPromise
 
                 await wsProvider.disconnect()
 
@@ -395,13 +445,12 @@ class TransactionHandler {
                 return { transactionHash, minBalanceBumped, sentExistentialDeposit }
             }
         } catch (e) {
-            console.log(e)
             await wsProvider.disconnect()
             throw e
         }
     }
 
-    async submitEVMTransaction(data, royality = false) {
+    async submitEVMTransaction(data, royalty = false) {
         try {
             /** Connect to node **/
             const web3 = new Web3(data.rpcUrl)
@@ -410,18 +459,18 @@ class TransactionHandler {
             const treasuryAccount = web3.eth.accounts.privateKeyToAccount(crypto.decrypt(data.privateKey, this.encryptionKey))
 
             let value = data.value
-            if (royality) {
-                /** If it is royality transaction, use the royalityValue **/
-                value = data.royalityValue
+            if (royalty) {
+                /** If it is royalty transaction, use the royaltyValue **/
+                value = data.royaltyValue
             } else {
-                /** Otherwise use the normal value and substract the royalityValue if specified **/
-                if (data.royalityValue) value -= data.royalityValue
+                /** Otherwise use the normal value and substract the royaltyValue if specified **/
+                if (data.royaltyValue) value -= data.royaltyValue
             }
 
-            /** reeiverAddress defaults to treasury royalityAddress **/
-            let receiverAddress = data.royalityAddress
-            if (!royality) {
-                /** If not a royality transaction, receiverAddress is any substrate address submitted by the user **/
+            /** reeiverAddress defaults to treasury royaltyAddress **/
+            let receiverAddress = data.royaltyAddress
+            if (!royalty) {
+                /** If not a royalty transaction, receiverAddress is any substrate address submitted by the user **/
                 receiverAddress = data.evmAddress
             }
 

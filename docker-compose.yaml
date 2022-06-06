@@ -21,6 +21,7 @@ services:
             - 8081:8081
             - 8086:8086
         environment:
+            ENVIRONMENT: ${ENVIRONMENT}
             DATABASE_USER: ${DATABASE_USER}
             DATABASE_PASSWORD: ${DATABASE_PASSWORD}
             DATABASE_DBNAME: ${DATABASE_DBNAME}
@@ -44,6 +45,7 @@ services:
         ports:
             - 8085:8085
         environment:
+            ENVIRONMENT: ${ENVIRONMENT}
             API_KEY: ${API_KEY}
             BOT_TOKEN: ${BOT_TOKEN}
             BOT_GUILD_ID: ${BOT_GUILD_ID}

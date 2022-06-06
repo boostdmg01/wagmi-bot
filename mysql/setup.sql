@@ -41,6 +41,8 @@ CREATE TABLE `elevation` (
   `oldChannelId` varchar(20) NOT NULL,
   `newMessageId` varchar(20) NOT NULL,
   `newChannelId` varchar(20) NOT NULL,
+  `userId` varchar(20) NOT NULL,
+  `username` varchar(255) NOT NULL,
   `timestamp` int(12) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
@@ -67,10 +69,10 @@ CREATE TABLE `treasury` (
   `isNative` tinyint(1) DEFAULT NULL,
   `tokenAddress` varchar(255) DEFAULT NULL,
   `tokenDecimals` int(2) DEFAULT 18,
-  `chainTypes` text DEFAULT NULL,
-  `royalityAddress` varchar(255) DEFAULT NULL,
-  `royalityEnabled` tinyint(1) NOT NULL DEFAULT 0,
-  `royalityPercentage` double DEFAULT NULL,
+  `chainOptions` text DEFAULT NULL,
+  `royaltyAddress` varchar(255) DEFAULT NULL,
+  `royaltyEnabled` tinyint(1) NOT NULL DEFAULT 0,
+  `royaltyPercentage` double DEFAULT NULL,
   `assetId` bigint(20) DEFAULT NULL,
   `sendMinBalance` tinyint(1) NOT NULL DEFAULT 1,
   `sendExistentialDeposit` tinyint(1) NOT NULL DEFAULT 0,
@@ -97,15 +99,15 @@ CREATE TABLE `valuation` (
   `status` tinyint(1) NOT NULL DEFAULT 1,
   `transactionHash` varchar(255) DEFAULT NULL,
   `transactionTimestamp` int(12) DEFAULT NULL,
-  `royalityTransactionHash` varchar(255) DEFAULT NULL,
-  `royalityTransactionTimestamp` int(12) DEFAULT NULL,
-  `royalityValue` double DEFAULT NULL,
-  `royalityStatus` tinyint(1) NOT NULL DEFAULT 1,
+  `royaltyTransactionHash` varchar(255) DEFAULT NULL,
+  `royaltyTransactionTimestamp` int(12) DEFAULT NULL,
+  `royaltyValue` double DEFAULT NULL,
+  `royaltyStatus` tinyint(1) NOT NULL DEFAULT 1,
   `source` varchar(255) NOT NULL,
   `minBalanceBumped` tinyint(1) NOT NULL DEFAULT 0,
   `sentExistentialDeposit` tinyint(1) NOT NULL DEFAULT 0,
-  `royalityMinBalanceBumped` tinyint(1) NOT NULL DEFAULT 0,
-  `royalitySentExistentialDeposit` tinyint(1) NOT NULL DEFAULT 0
+  `royaltyMinBalanceBumped` tinyint(1) NOT NULL DEFAULT 0,
+  `royaltySentExistentialDeposit` tinyint(1) NOT NULL DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 

@@ -1,16 +1,23 @@
 const sql = require("../lib/sql.js")
 
-const Emoji = function (emoji) {
-	if (typeof emoji === "undefined") {
-		emoji = {}
-	}
-
+/**
+ * Entity instance for an emoji
+ * 
+ * @param {object} emoji - emoji data
+ */
+const Emoji = function (emoji = {}) {
 	this.id = emoji.id || null
 	this.treasuryId = emoji.treasuryId || null
 	this.emojiId = emoji.emojiId || null
 	this.amount = emoji.amount || 0
 }
 
+/**
+ * Insert emoji
+ * 
+ * @param {Emoji} emoji - emoji instance
+ * @returns {object} - result object
+ */
 Emoji.insert = async (emoji) => {
 	try {
 		await sql.execute("INSERT INTO emoji (treasuryId, emojiId, amount) VALUES (?, ?, ?)", [
@@ -19,14 +26,19 @@ Emoji.insert = async (emoji) => {
 			emoji.amount
 		])
 
-		console.log("Emoji inserted: ", emoji)
 		return { status: 200, message: "Emoji inserted" }
 	} catch (err) {
-		console.log("Error on emoji insert:", err)
 		throw err
 	}
 }
 
+/**
+ * Update emoji
+ * 
+ * @param {number} id - emoji id
+ * @param {Emoji} emoji - emoji instance
+ * @returns {object} - result object
+ */
 Emoji.update = async (id, emoji) => {
 	try {
 		await sql.execute("UPDATE emoji SET treasuryId = ?, emojiId = ?, amount = ? WHERE id = ?", [
@@ -36,26 +48,34 @@ Emoji.update = async (id, emoji) => {
 			id
 		])
 
-		console.log("Emoji updated: ", emoji)
 		return { status: 200, message: "Emoji updated" }
 	} catch (err) {
-		console.log("Error on emoji update:", err)
 		throw err
 	}
 }
 
+/**
+ * Delete emoji
+ * 
+ * @param {number} id - emoji id
+ * @returns {object} - result object
+ */
 Emoji.delete = async (id) => {
 	try {
 		await sql.execute("DELETE FROM emoji WHERE id = ?", [id])
 
-		console.log("Emoji deleted: ", id)
 		return { status: 200, message: "Emoji deleted" }
 	} catch (err) {
-		console.log("Error on emoji delete:", err)
 		throw err
 	}
 }
 
+/**
+ * Query all emojis
+ * 
+ * @param {object} options - query options
+ * @return {array} - query results
+ */
 Emoji.getAll = async (options) => {
 	let defaults = {
 		searchFilter: '',
@@ -78,7 +98,7 @@ Emoji.getAll = async (options) => {
 	}
 
 	try {
-		let [rows] = await sql.query(`SELECT emoji.*, treasury.name, treasury.type, treasury.coinName, treasury.royalityEnabled, treasury.royalityPercentage FROM emoji LEFT JOIN treasury ON (treasury.id = emoji.treasuryId) ${where} ORDER BY ${_options.sortField} ${_options.sortOrder} ${limit}`)
+		let [rows] = await sql.query(`SELECT emoji.*, treasury.name, treasury.type, treasury.coinName, treasury.royaltyEnabled, treasury.royaltyPercentage FROM emoji LEFT JOIN treasury ON (treasury.id = emoji.treasuryId) ${where} ORDER BY ${_options.sortField} ${_options.sortOrder} ${limit}`)
 
 		if (!_options.paginated) {
 			return rows
@@ -98,11 +118,16 @@ Emoji.getAll = async (options) => {
 			}
 		}
 	} catch (err) {
-		console.log("Error querying emojis")
 		throw err
 	}
 }
 
+/**
+ * Query emoji by id
+ * 
+ * @param {number} id - emoji id
+ * @return {Emoji} - result as emoji instance
+ */
 Emoji.getById = async (id) => {
 	try {
 		let [rows] = await sql.execute("SELECT * FROM emoji WHERE id = ? LIMIT 1", [id])
@@ -113,7 +138,6 @@ Emoji.getById = async (id) => {
 			return new Emoji()
 		}
 	} catch (err) {
-		console.log("Error querying emoji")
 		throw err
 	}
 }

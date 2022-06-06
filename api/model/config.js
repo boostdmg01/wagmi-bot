@@ -2,20 +2,30 @@ const sql = require("../lib/sql.js")
 
 const Config = function () { }
 
+/**
+ * Update configuration values
+ * 
+ * @param {object} config - object containing configuration keys and values
+ * @returns {object} - result object
+ */
 Config.update = async (config) => {
 	try {
 		for (let name in config) {
 			await sql.execute("UPDATE config SET value = ? WHERE name = ?", [config[name], name])
 		}
-
-		console.log("Config updated: ", config)
+		
 		return { status: 200, message: "Config updated" }
 	} catch (err) {
-		console.log("Error on config update:", err)
 		throw err
 	}
 }
 
+/**
+ * Find configuration values based on their keys
+ * 
+ * @param {array} - array containing keys of the requested configuration values 
+ * @returns {object} - object of configuration values
+ */
 Config.find = async (keys) => {
 	try {
 		let [rows] = await sql.query("SELECT * FROM config WHERE name IN (?)", [keys])
@@ -40,11 +50,15 @@ Config.find = async (keys) => {
 
 		return config
 	} catch (err) {
-		console.log("Error querying config")
 		throw err
 	}
 }
 
+/**
+ * Get all configuration values 
+ * 
+ * @returns {object} - object of configuration values
+ */
 Config.getAll = async () => {
 	try {
 		let [rows] = await sql.query("SELECT * FROM config")
@@ -69,7 +83,6 @@ Config.getAll = async () => {
 
 		return config
 	} catch (err) {
-		console.log("Error querying config")
 		throw err
 	}
 }

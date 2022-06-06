@@ -1,5 +1,5 @@
 const axios = require("axios")
-require("dotenv").config()
+const logger = require("../lib/logger")
 
 axios.defaults.headers.common = { 'Authorization': `Bearer ${process.env.API_KEY}` }
 
@@ -19,8 +19,9 @@ const API = function () {
 				method: method,
 				data: data
 			})
-		} catch (error) {
-			return this.onError(error)
+		} catch (err) {
+			logger.error("API Error: Request failed: %O", err)
+			return Promise.reject(err)
 		}
 	}
 
@@ -54,8 +55,8 @@ const API = function () {
 					treasuryId: treasury.treasuryId,
 					coinName: treasury.coinName,
 					treasuryType: treasury.type,
-					royalityPercentage: treasury.royalityPercentage,
-					royalityEnabled: treasury.royalityEnabled
+					royaltyPercentage: treasury.royaltyPercentage,
+					royaltyEnabled: treasury.royaltyEnabled
 				}
 			}
 		}).bind(this))
@@ -69,20 +70,6 @@ const API = function () {
 		const treasuryValuations = this.treasuryValuations
 
 		return { config, treasuryElevations, treasuryValuations }
-	}
-
-	this.onError = (error) => {
-		console.error('Request Failed:', error.config)
-
-		if (error.response) {
-			console.error('Status:', error.response.status)
-			console.error('Data:', error.response.data)
-			console.error('Headers:', error.response.headers)
-		} else {
-			console.error('Error Message:', error.message)
-		}
-
-		return Promise.reject(error.response || error.message)
 	}
 
 	return this

@@ -7,7 +7,7 @@
       }}</a>
     </div>
     <div>
-      <span class="font-semibold">Paid:</span>
+      <span class="font-semibold">Submitted:</span>
       {{
         rowData.transactionHash !== "" && rowData.transactionHash !== null
           ? "Yes"
@@ -22,26 +22,26 @@
           : "-"
       }}
     </div>
-    <div v-if="rowData.royalityValue > 0">
+    <div v-if="rowData.royaltyValue > 0">
       <div>
-        <span class="font-semibold">Royality Fee:</span>
-        {{ rowData.royalityValue }} {{ rowData.coinName }}
+        <span class="font-semibold">Royalty Fee:</span>
+        {{ rowData.royaltyValue }} {{ rowData.coinName }}
       </div>
       <div>
-        <span class="font-semibold">Royality Paid:</span>
+        <span class="font-semibold">Royalty Submitted:</span>
         {{
-          rowData.royalityTransactionHash !== "" &&
-          rowData.royalityTransactionHash !== null
+          rowData.royaltyTransactionHash !== "" &&
+          rowData.royaltyTransactionHash !== null
             ? "Yes"
             : "No"
         }}
       </div>
       <div>
-        <span class="font-semibold">Royality Transaction Hash:</span>
+        <span class="font-semibold">Royalty Transaction Hash:</span>
         {{
-          rowData.royalityTransactionHash !== "" &&
-          rowData.royalityTransactionHash !== null
-            ? rowData.royalityTransactionHash
+          rowData.royaltyTransactionHash !== "" &&
+          rowData.royaltyTransactionHash !== null
+            ? rowData.royaltyTransactionHash
             : "-"
         }}
       </div>
@@ -59,16 +59,16 @@
       </div>
     </div>
 
-    <div v-if="rowData.royalityValue > 0 && rowData.hasAsset === 1">
+    <div v-if="rowData.royaltyValue > 0 && rowData.hasAsset === 1">
       <div>
         <span class="font-semibold"
-          >Royality Valuation bumped to asset min balance:</span
+          >Royalty Valuation bumped to asset min balance:</span
         >
-        {{ rowData.royalityMinBalanceBumped === 1 ? "Yes" : "No" }}
+        {{ rowData.royaltyMinBalanceBumped === 1 ? "Yes" : "No" }}
       </div>
       <div>
-        <span class="font-semibold">Royality Existential Deposit sent:</span>
-        {{ rowData.royalitySentExistentialDeposit === 1 ? "Yes" : "No" }}
+        <span class="font-semibold">Royalty Existential Deposit sent:</span>
+        {{ rowData.royaltySentExistentialDeposit === 1 ? "Yes" : "No" }}
       </div>
     </div>
   </div>

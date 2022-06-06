@@ -1,16 +1,23 @@
 const sql = require("../lib/sql.js")
 
-const User = function (user) {
-	if (typeof user === "undefined") {
-		user = {}
-	}
-
+/**
+ * Entity instance for an user
+ * 
+ * @param {object} user - user data
+ */
+const User = function (user = {}) {
 	this.id = user.id || null
 	this.evmAddress = user.evmAddress || null
 	this.substrateAddress = user.substrateAddress || null
 	this.twitterHandle = user.twitterHandle || null
 }
 
+/**
+ * Insert or update user
+ * 
+ * @param {User} user - user instance
+ * @returns {object} - result object
+ */
 User.insertOrUpdate = async (user) => {
 	try {
 		let [rows] = await sql.execute("SELECT id FROM user WHERE id = ?", [user.id])
@@ -32,14 +39,18 @@ User.insertOrUpdate = async (user) => {
 
 		await sql.execute(`UPDATE user SET ${sqlUpdateStatement} WHERE id = ?`, sqlUpdateValues)
 
-		console.log("User updated: ", user)
 		return { status: 200, message: "User updated" }
 	} catch (err) {
-		console.log("Error on user update:", err)
 		throw err
 	}
 }
 
+/**
+ * Query all users
+ * 
+ * @param {object} options - query options
+ * @return {array} - query results
+ */
 User.getAll = async (options) => {
 	let defaults = {
 		paginated: false,
@@ -77,11 +88,16 @@ User.getAll = async (options) => {
 			}
 		}
 	} catch (err) {
-		console.log("Error querying user")
 		throw err
 	}
 }
 
+/**
+ * Query user by id
+ * 
+ * @param {number} id - user id
+ * @return {User} - result as user instance
+ */
 User.getById = async (id) => {
 	try {
 		let [rows] = await sql.execute("SELECT * FROM user WHERE id = ? LIMIT 1", [id])
@@ -92,7 +108,6 @@ User.getById = async (id) => {
 			return new User()
 		}
 	} catch (err) {
-		console.log("Error querying user")
 		throw err
 	}
 }

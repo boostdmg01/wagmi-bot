@@ -124,9 +124,9 @@
                 <div>
                   <ValuatedMessageStatusIcon :status="rowData.status" />
                 </div>
-                <div class="mx-2" v-if="rowData.royalityValue > 0">/</div>
-                <div v-if="rowData.royalityValue > 0">
-                  <ValuatedMessageStatusIcon :status="rowData.royalityStatus" />
+                <div class="mx-2" v-if="rowData.royaltyValue > 0">/</div>
+                <div v-if="rowData.royaltyValue > 0">
+                  <ValuatedMessageStatusIcon :status="rowData.royaltyStatus" />
                 </div>
               </div>
             </template>
@@ -266,7 +266,7 @@ export default {
         },
         {
           value: 2,
-          label: "Paid",
+          label: "Transaction submitted",
         },
         {
           value: 3,

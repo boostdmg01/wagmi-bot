@@ -249,34 +249,34 @@
               />
             </div>
             <div class="mt-6">
-              <FormLabel for="chainTypes">Types JSON</FormLabel>
+              <FormLabel for="chainOptions">Types JSON</FormLabel>
               <FormInput
-                v-model="treasury.chainTypes" :errors="getErrors('chainTypes')"
+                v-model="treasury.chainOptions" :errors="getErrors('chainOptions')"
                 type="textarea"
-                id="chainTypes"
+                id="chainOptions"
               />
             </div>
           </div>
           <div class="mt-6">
-            <FormLabel for="royalityEnabled">Royality Fee</FormLabel>
-            <FormToggle v-model="treasury.royalityEnabled" />
+            <FormLabel for="royaltyEnabled">Royalty Fee</FormLabel>
+            <FormToggle v-model="treasury.royaltyEnabled" />
           </div>
-          <div v-if="royalityEnabled">
+          <div v-if="royaltyEnabled">
             <div class="mt-6">
-              <FormLabel for="royalityPercentage"
-                >Royality Percentage</FormLabel
+              <FormLabel for="royaltyPercentage"
+                >Royalty Percentage</FormLabel
               >
               <FormInput
-                v-model="treasury.royalityPercentage" :errors="getErrors('royalityPercentage')"
-                id="royalityPercentage"
+                v-model="treasury.royaltyPercentage" :errors="getErrors('royaltyPercentage')"
+                id="royaltyPercentage"
               />
             </div>
 
             <div class="mt-6">
-              <FormLabel for="royalityAddress">Royality Address</FormLabel>
+              <FormLabel for="royaltyAddress">Royalty Address</FormLabel>
               <FormInput
-                v-model="treasury.royalityAddress" :errors="getErrors('royalityAddress')"
-                id="royalityAddress"
+                v-model="treasury.royaltyAddress" :errors="getErrors('royaltyAddress')"
+                id="royaltyAddress"
               />
             </div>
           </div>
@@ -366,11 +366,11 @@ export default {
         privateKey: "",
         tokenAddress: "",
         tokenDecimals: 18,
-        chainTypes: "",
+        chainOptions: "",
         isNative: null,
-        royalityEnabled: false,
-        royalityPercentage: "",
-        royalityAddress: "",
+        royaltyEnabled: false,
+        royaltyPercentage: "",
+        royaltyAddress: "",
         parachainType: null,
         assetId: null,
         sendMinBalance: true,
@@ -393,8 +393,8 @@ export default {
     elevationActive: function () {
       return this.treasury.elevationActive;
     },
-    royalityEnabled: function () {
-      return this.treasury.royalityEnabled;
+    royaltyEnabled: function () {
+      return this.treasury.royaltyEnabled;
     },
     parachainType: function () {
       return this.treasury.parachainType?.value;
@@ -449,7 +449,7 @@ export default {
                 : { value: 1, name: "Asset" };
 
             this.treasury.elevationActive = !!this.treasury.elevationActive;
-            this.treasury.royalityEnabled = !!this.treasury.royalityEnabled;
+            this.treasury.royaltyEnabled = !!this.treasury.royaltyEnabled;
             this.treasury.sendMinBalance = !!this.treasury.sendMinBalance;
             this.treasury.sendExistentialDeposit =
               !!this.treasury.sendExistentialDeposit;
@@ -465,7 +465,7 @@ export default {
       let data = Object.assign({}, this.treasury, true);
 
       data.elevationActive = data.elevationActive ? 1 : 0;
-      data.royalityEnabled = data.royalityEnabled ? 1 : 0;
+      data.royaltyEnabled = data.royaltyEnabled ? 1 : 0;
       data.sendMinBalance = data.sendMinBalance ? 1 : 0;
       data.sendExistentialDeposit = data.sendExistentialDeposit ? 1 : 0;
       data.elevationChannelId = data.elevationChannelId?.id;

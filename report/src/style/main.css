@@ -54,3 +54,7 @@
 .vuetable tr.vuetable-detail-row {
     @apply bg-gray-200
 }
+
+.mx-datepicker {
+    width: 100%
+}

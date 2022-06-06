@@ -1,6 +1,12 @@
 const sql = require("../lib/sql.js")
 
+/**
+ * Entity instance for a message valuation
+ * 
+ * @param {object} valuation - valuation data
+ */
 const Valuation = function (valuation = {}) {
+	this.id = valuation.id || null,
 	this.messageId = valuation.messageId || null,
 	this.discordEmojiId = valuation.discordEmojiId || null,
 	this.treasuryId = valuation.treasuryId || null,
@@ -12,20 +18,26 @@ const Valuation = function (valuation = {}) {
 	this.transactionHash = valuation.transactionHash || null
 	this.status = valuation.status || 1,
 	this.transactionTimestamp = valuation.transactionTimestamp || null,
-	this.royalityValue = valuation.royalityValue || null,
-	this.royalityTransactionHash = valuation.royalityTransactionHash || null
-	this.royalityTransactionTimestamp = valuation.royalityTransactionTimestamp || null
-	this.royalityStatus = valuation.royalityStatus || 1
+	this.royaltyValue = valuation.royaltyValue || null,
+	this.royaltyTransactionHash = valuation.royaltyTransactionHash || null
+	this.royaltyTransactionTimestamp = valuation.royaltyTransactionTimestamp || null
+	this.royaltyStatus = valuation.royaltyStatus || 1
 	this.source = valuation.source || null
 	this.minBalanceBumped = valuation.minBalanceBumped || 0
 	this.sentExistentialDeposit = valuation.sentExistentialDeposit || 0
-	this.royalityMinBalanceBumped = valuation.royalityMinBalanceBumped || 0
-	this.royalitySentExistentialDeposit = valuation.royalitySentExistentialDeposit || 0
+	this.royaltyMinBalanceBumped = valuation.royaltyMinBalanceBumped || 0
+	this.royaltySentExistentialDeposit = valuation.royaltySentExistentialDeposit || 0
 }
 
+/**
+ * Insert message valuation
+ * 
+ * @param {Valuation} valuation - message valuation instance
+ * @returns {object} - result object
+ */
 Valuation.insert = async (valuation) => {
 	try {
-		await sql.execute("INSERT INTO valuation (messageId, discordEmojiId, treasuryId, userId, username, timestamp, value, messageLink, status, royalityValue, source) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", [
+		await sql.execute("INSERT INTO valuation (messageId, discordEmojiId, treasuryId, userId, username, timestamp, value, messageLink, status, royaltyValue, source) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", [
 			valuation.messageId,
 			valuation.discordEmojiId,
 			valuation.treasuryId,
@@ -35,42 +47,22 @@ Valuation.insert = async (valuation) => {
 			valuation.value,
 			valuation.messageLink,
 			valuation.status,
-			valuation.royalityValue,
+			valuation.royaltyValue,
 			valuation.source
 		])
 
-		console.log("Valuation inserted: ", valuation)
 		return { status: 200, message: "Valuation inserted" }
 	} catch (err) {
-		console.log("Error on valuation insert:", err)
 		throw err
 	}
 }
 
-Valuation.find = async (options) => {
-	let where = []
-	let values = []
-
-	for (let option of options) {
-		let condition = []
-		for (let key in option) {
-			condition.push(`${key} = ?`)
-			values.push(option[key])
-		}
-
-		where.push(condition.join(' AND '))
-	}
-
-	try {
-		let [rows] = await sql.query(`SELECT * FROM valuation WHERE ${where.join(' OR ')}`, values)
-
-		return rows
-	} catch (err) {
-		console.log("Error querying valuations")
-		throw err
-	}
-}
-
+/**
+ * Find message valuation based on conditions
+ * 
+ * @param {object} options - conditions
+ * @return {Valuation} - result as message valuation instance
+ */
 Valuation.findOne = async (options) => {
 	let where = []
 	let values = []
@@ -90,11 +82,16 @@ Valuation.findOne = async (options) => {
 			return new Valuation()
 		}
 	} catch (err) {
-		console.log("Error querying valuations")
 		throw err
 	}
 }
 
+/**
+ * Query all message valuations
+ * 
+ * @param {object} options - query options
+ * @return {array} - query results
+ */
 Valuation.getAll = async (options) => {
 	let defaults = {
 		searchFilter: null,
@@ -132,11 +129,11 @@ Valuation.getAll = async (options) => {
 
 		if (_options.searchFilter.status) {
 			if (_options.searchFilter.status === 1) {
-				where.push(`(valuation.status = 1 OR (valuation.royalityValue IS NOT NULL AND valuation.royalityStatus = 1))`)
+				where.push(`(valuation.status = 1 OR (valuation.royaltyValue IS NOT NULL AND valuation.royaltyStatus = 1))`)
 			} else if (_options.searchFilter.status === 2) {
-				where.push(`(valuation.status = 2 OR (valuation.royalityValue IS NOT NULL AND valuation.royalityStatus = 2))`)
+				where.push(`(valuation.status = 2 OR (valuation.royaltyValue IS NOT NULL AND valuation.royaltyStatus = 2))`)
 			} else {
-				where.push(`(valuation.status > 2 OR (valuation.royalityValue IS NOT NULL AND valuation.royalityStatus > 2))`)
+				where.push(`(valuation.status > 2 OR (valuation.royaltyValue IS NOT NULL AND valuation.royaltyStatus > 2))`)
 			}
 		}
 	}
@@ -165,11 +162,16 @@ Valuation.getAll = async (options) => {
 			}
 		}
 	} catch (err) {
-		console.log("Error querying valuations")
 		throw err
 	}
 }
 
+/**
+ * Query all message valuations without sensitive data
+ * 
+ * @param {object} options - query options
+ * @return {array} - query results
+ */
 Valuation.getAllPublic = async (options) => {
 	let defaults = {
 		searchFilter: null,
@@ -207,11 +209,11 @@ Valuation.getAllPublic = async (options) => {
 
 		if (_options.searchFilter.status) {
 			if (_options.searchFilter.status === 1) {
-				where.push(`(valuation.status = 1 OR (valuation.royalityValue IS NOT NULL AND valuation.royalityStatus = 1))`)
+				where.push(`(valuation.status = 1 OR (valuation.royaltyValue IS NOT NULL AND valuation.royaltyStatus = 1))`)
 			} else if (_options.searchFilter.status === 2) {
-				where.push(`(valuation.status = 2 OR (valuation.royalityValue IS NOT NULL AND valuation.royalityStatus = 2))`)
+				where.push(`(valuation.status = 2 OR (valuation.royaltyValue IS NOT NULL AND valuation.royaltyStatus = 2))`)
 			} else {
-				where.push(`(valuation.status > 2 OR (valuation.royalityValue IS NOT NULL AND valuation.royalityStatus > 2))`)
+				where.push(`(valuation.status > 2 OR (valuation.royaltyValue IS NOT NULL AND valuation.royaltyStatus > 2))`)
 			}
 		}
 	}
@@ -240,7 +242,6 @@ Valuation.getAllPublic = async (options) => {
 			}
 		}
 	} catch (err) {
-		console.log("Error querying valuations")
 		throw err
 	}
 }

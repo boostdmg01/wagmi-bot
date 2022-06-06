@@ -1,7 +1,14 @@
 const Treasury = require("../model/treasury.js")
 const Validation = require("../lib/validation")
 const io = require("../lib/io").getIO()
+const logger = require("../lib/logger")
 
+/**
+ * Insert treasury
+ * 
+ * @param {*} req - Request
+ * @param {*} res - Response
+ */
 exports.insert = async (req, res) => {
 	if (!req.body) {
 		res.status(400).send({
@@ -22,16 +29,25 @@ exports.insert = async (req, res) => {
 	}
 
 	try {
+		logger.debug("Inserting treasury: %O", treasury)
 		const result = await Treasury.insert(treasury)
+		logger.info("Treasury inserted")
 		io.emit("update")
 		res.send(result)
 	} catch (err) {
+		logger.error(`Error on inserting treasury Id %d: %O`, req.params.id, err)
 		res.status(500).send({
 			message: `Error on inserting treasury`
 		})
 	}
 }
 
+/**
+ * Update treasury
+ * 
+ * @param {*} req - Request
+ * @param {*} res - Response
+ */
 exports.update = async (req, res) => {
 	if (!req.body) {
 		res.status(400).send({
@@ -52,16 +68,25 @@ exports.update = async (req, res) => {
 	}
 
 	try {
+		logger.debug("Updating treasury Id %d: %O", req.params.id, treasury)
 		const result = await Treasury.update(req.params.id, treasury)
+		logger.info("Treasury Id %d updated", req.params.id)
 		io.emit("update")
 		res.send(result)
 	} catch (err) {
+		logger.error(`Error on updating treasury Id %d: %O`, req.params.id, err)
 		res.status(500).send({
-			message: `Error on updating treasury with id ${req.params.id}`
+			message: `Error on updating treasury`
 		})
 	}
 }
 
+/**
+ * Delete treasury
+ * 
+ * @param {*} req - Request
+ * @param {*} res - Response
+ */
 exports.delete = async (req, res) => {
 	if (!req.body) {
 		res.status(400).send({
@@ -86,16 +111,25 @@ exports.delete = async (req, res) => {
 	}
 
 	try {
+		logger.debug("Deleting treasury Id %d", req.params.id)
 		const result = await Treasury.delete(req.params.id)
+		logger.info("Treasury Id %d deleted", req.params.id)
 		io.emit("update")
 		res.send(result)
 	} catch (err) {
+		logger.error(`Error on deleting treasury Id %d: %O`, req.params.id, err)
 		res.status(500).send({
-			message: `Error on deleting treasury with id ${req.params.id}`
+			message: `Error on deleting treasury`
 		})
 	}
 }
 
+/**
+ * Query all treasuries
+ * 
+ * @param {*} req - Request
+ * @param {*} res - Response
+ */
 exports.getAll = async (req, res) => {
 	let options = {}
 
@@ -112,16 +146,23 @@ exports.getAll = async (req, res) => {
 	}
 
 	try {
+		logger.debug("Getting all treasuries: %O", options)
 		const result = await Treasury.getAll(options)
 		res.send(result)
 	} catch (err) {
+		logger.error(`Error on retrieving treasuries: %O`, err)
 		res.status(500).send({
-			message:
-				err.message || "Some error occurred while retrieving treasuries."
+			message: "Error on retrieving treasuries"
 		})
 	}
 }
 
+/**
+ * Query treasury by id
+ * 
+ * @param {*} req - Request
+ * @param {*} res - Response
+ */
 exports.getById = async (req, res) => {
 	let errors = []
 	if (!Validation.isNumber(req.params.id)) {
@@ -140,28 +181,42 @@ exports.getById = async (req, res) => {
 	}
 
 	try {
+		logger.debug("Getting treasury id %d", req.params.id)
 		const result = await Treasury.getById(req.params.id)
 		res.send(result)
 	} catch (err) {
+		logger.error(`Error on retrieving treasury id $d: %O`, req.params.id, err)
 		res.status(500).send({
-			message:
-				err.message || `Some error occurred while retrieving treasury with id ${req.params.id}.`
+			message: "Error on retrieving treasury id"
 		})
 	}
 }
 
+/**
+ * Get all treasuries without sensitive data
+ * 
+ * @param {*} req - Request
+ * @param {*} res - Response
+ */
 exports.getAllPublic = async (req, res) => {
 	try {
+		logger.debug("Getting all treasuries (public)")
 		const result = await Treasury.getAllPublic()
 		res.send(result)
 	} catch (err) {
+		logger.error("Error on retrieving treasuries (public): %O", err)
 		res.status(500).send({
-			message:
-				err.message || "Some error occurred while retrieving treasuries."
+			message: "Error on retrieving treasuries (public)"
 		})
 	}
 }
 
+/**
+ * Validate treasury object
+ * 
+ * @param {object} treasury - Treasury object
+ * @param {boolean} isUpdate - flag if update method
+ */
 checkTreasuryValidation = (treasury, isUpdate = false) => {
 	let errors = []
 	if (!Validation.isNotEmpty(treasury.name)) {
@@ -223,9 +278,9 @@ checkTreasuryValidation = (treasury, isUpdate = false) => {
 			})
 		}
 
-		if (Validation.isNotEmpty(treasury.chainTypes) && !Validation.isJSON(treasury.chainTypes)) {
+		if (Validation.isNotEmpty(treasury.chainOptions) && !Validation.isJSON(treasury.chainOptions)) {
 			errors.push({
-				key: 'chainTypes',
+				key: 'chainOptions',
 				message: 'Not a valid json'
 			})
 		}
@@ -239,10 +294,10 @@ checkTreasuryValidation = (treasury, isUpdate = false) => {
 			}
 		}
 
-		if (treasury.royalityEnabled === 1) {
-			if (!Validation.isSubstrateAddress(treasury.royalityAddress)) {
+		if (treasury.royaltyEnabled === 1) {
+			if (!Validation.isSubstrateAddress(treasury.royaltyAddress)) {
 				errors.push({
-					key: 'royalityAddress',
+					key: 'royaltyAddress',
 					message: 'Not a Substrate address'
 				})
 			}
@@ -271,10 +326,10 @@ checkTreasuryValidation = (treasury, isUpdate = false) => {
 			}
 		}
 
-		if (treasury.royalityEnabled === 1) {
-			if (!Validation.isEVMAddress(treasury.royalityAddress)) {
+		if (treasury.royaltyEnabled === 1) {
+			if (!Validation.isEVMAddress(treasury.royaltyAddress)) {
 				errors.push({
-					key: 'royalityAddress',
+					key: 'royaltyAddress',
 					message: 'Not an EVM address'
 				})
 			}
@@ -293,10 +348,10 @@ checkTreasuryValidation = (treasury, isUpdate = false) => {
 		})
 	}
 
-	if (treasury.royalityEnabled === 1) {
-		if (!Validation.isNumberOrDecimal(treasury.royalityPercentage)) {
+	if (treasury.royaltyEnabled === 1) {
+		if (!Validation.isNumberOrDecimal(treasury.royaltyPercentage)) {
 			errors.push({
-				key: 'royalityPercentage',
+				key: 'royaltyPercentage',
 				message: 'Not a number or decimal'
 			})
 		}

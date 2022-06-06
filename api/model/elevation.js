@@ -1,31 +1,50 @@
 const sql = require("../lib/sql.js")
 
+/**
+ * Entity instance for an elevation
+ * 
+ * @param {object} elevation - elevation data
+ */
 const Elevation = function (elevation = {}) {
 	this.oldMessageId = elevation.oldMessageId || null
 	this.oldChannelId = elevation.oldChannelId || null
 	this.newMessageId = elevation.newMessageId || null
 	this.newChannelId = elevation.newChannelId || null
+	this.userId = elevation.userId || null
+	this.username = elevation.username || null
 	this.timestamp = elevation.timestamp || null
 }
 
+/**
+ * Insert post elevation
+ * 
+ * @param {Elevation} - elevation instance
+ * @returns {object} - result object
+ */
 Elevation.insert = async (elevation) => {
 	try {
-		await sql.execute("INSERT INTO elevation (oldMessageId, oldChannelId, newMessageId, newChannelId, timestamp) VALUES (?, ?, ?, ?, ?)", [
+		await sql.execute("INSERT INTO elevation (oldMessageId, oldChannelId, newMessageId, newChannelId, userId, username, timestamp) VALUES (?, ?, ?, ?, ?, ?, ?)", [
 			elevation.oldMessageId,
 			elevation.oldChannelId,
 			elevation.newMessageId,
 			elevation.newChannelId,
+			elevation.userId,
+			elevation.username,
 			Math.floor(Date.now() / 1000)
 		])
 
-		console.log("Elevation inserted: ", elevation)
 		return { status: 200, message: "Elevation inserted" }
 	} catch (err) {
-		console.log("Error on elevation insert:", err)
 		throw err
 	}
 }
 
+/**
+ * Find elevations based on multiple conditions.
+ * 
+ * @param {object} options - nested conditions
+ * @return {array} - query results
+ */
 Elevation.find = async (options) => {
 	let where = []
 	let values = []
@@ -40,16 +59,20 @@ Elevation.find = async (options) => {
 		where.push(condition.join(' AND '))
 	}
 
-
 	try {
 		let [rows] = await sql.query(`SELECT * FROM elevation WHERE ${where.join(' OR ')}`, values)
 		return rows
 	} catch (err) {
-		console.log("Error querying elevations")
 		throw err
 	}
 }
 
+/**
+ * Find elevation based on conditions
+ * 
+ * @param {object} options - conditions
+ * @return {Elevation} - result as elevation instance
+ */
 Elevation.findOne = async (options) => {
 	let where = []
 	let values = []
@@ -68,50 +91,6 @@ Elevation.findOne = async (options) => {
 			return new Elevation()
 		}
 	} catch (err) {
-		console.log("Error querying elevations")
-		throw err
-	}
-}
-
-Elevation.getAll = async (options) => {
-	let defaults = {
-		searchFilter: '',
-		paginated: false,
-		sortField: 'timestamp',
-		sortOrder: 'DESC',
-		pageNo: 1,
-		pageSize: 15,
-	}
-
-	let _options = Object.assign({}, defaults, options)
-
-	let limit = where = ""
-	if (_options.paginated) {
-		limit = `LIMIT ${_options.pageSize} OFFSET ${((_options.pageNo - 1) * _options.pageSize)}`
-	}
-
-	try {
-		let [rows] = await sql.query(`SELECT * FROM elevation ${where} ORDER BY ${_options.sortField} ${_options.sortOrder} ${limit}`)
-
-		if (!_options.paginated) {
-			return rows
-		} else {
-			let [counter] = await sql.execute(`SELECT COUNT(*) AS count FROM elevation ${where}`)
-
-			let to = _options.pageNo * _options.pageSize
-
-			return {
-				total: counter[0].count,
-				from: counter[0].count ? ((_options.pageNo - 1) * _options.pageSize) + 1 : 0,
-				to: to < counter[0].count ? to : counter[0].count,
-				last_page: Math.ceil(counter[0].count / _options.pageSize),
-				per_page: _options.pageSize,
-				current_page: _options.pageNo,
-				data: rows
-			}
-		}
-	} catch (err) {
-		console.log("Error querying elevations")
 		throw err
 	}
 }

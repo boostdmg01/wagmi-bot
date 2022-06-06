@@ -1,4 +1,4 @@
-require("dotenv").config()
+const logger = require("./lib/logger")
 const express = require("express")
 const app = express()
 const cors = require("cors")
@@ -63,23 +63,23 @@ app.use(unless((req, res, next) => {
 
 require("./routes.js")(app)
 
-app.listen(8081, () => {
-	console.log("Server is running on port 8081.")
-})
+app.listen(8081, () => logger.info("Server is running on port 8081."))
 
-server.listen(8086, () => console.log(`Websocket open on port 8086`))
+server.listen(8086, () => logger.info(`Websocket open on port 8086`))
 
 io.on("connection", socket => {
 	socket.on("process", (data) => {
-		console.log('here', data)
 		if (txHandler.isRunning) {
+			logger.error('Transactions triggered, but they are already processing')
 			socket.emit('error', 'Transactions are currently being processed')
 		} else {
 			let twoFATokenValid = twofactor.verifyToken(process.env.API_TWOFA_KEY, data.twoFAToken, 1);
-			console.log(twoFATokenValid)
+			
 			if (twoFATokenValid !== null && twoFATokenValid.delta === 0) {
+				logger.info('Transactions triggered')
 				txHandler.run(socket, data.encryptionKey)
 			} else {
+				logger.error('Transactions triggered, invalid 2FA Token provided')
 				socket.emit('error', '2FA Token invalid! Please retry!')
 			}
 		}

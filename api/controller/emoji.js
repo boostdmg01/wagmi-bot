@@ -1,7 +1,14 @@
 const Emoji = require("../model/emoji.js")
 const Validation = require("../lib/validation")
 const io = require("../lib/io").getIO()
+const logger = require("../lib/logger")
 
+/**
+ * Insert emoji
+ * 
+ * @param {*} req - Request
+ * @param {*} res - Response
+ */
 exports.insert = async (req, res) => {
 	if (!req.body) {
 		res.status(400).send({
@@ -22,16 +29,25 @@ exports.insert = async (req, res) => {
 	}
 
 	try {
+		logger.debug("Inserting emoji: %O", emoji)
 		const result = await Emoji.insert(emoji)
+		logger.info("Emoji inserted")
 		io.emit("update")
 		res.send(result)
 	} catch (err) {
+		logger.error("Error on inserting emoji: %O", err)
 		res.status(500).send({
 			message: `Error on inserting emoji`
 		})
 	}
 }
 
+/**
+ * Update emoji
+ * 
+ * @param {*} req - Request
+ * @param {*} res - Response
+ */
 exports.update = async (req, res) => {
 	if (!req.body) {
 		res.status(400).send({
@@ -52,16 +68,25 @@ exports.update = async (req, res) => {
 	}
 
 	try {
+		logger.debug("Updating emoji Id %d: %O", req.params.id, emoji)
 		const result = await Emoji.update(req.params.id, emoji)
+		logger.info("Emoji Id %d updated", req.params.id)
 		io.emit("update")
 		res.send(result)
 	} catch (err) {
+		logger.error(`Error on updating emoji Id %d: %O`, req.params.id, err)
 		res.status(500).send({
-			message: `Error on updating emoji with id ${req.params.id}`
+			message: `Error on updating emoji`
 		})
 	}
 }
 
+/**
+ * Delete emoji
+ * 
+ * @param {*} req - Request
+ * @param {*} res - Response
+ */
 exports.delete = async (req, res) => {
 	if (!req.body) {
 		res.status(400).send({
@@ -86,16 +111,25 @@ exports.delete = async (req, res) => {
 	}
 
 	try {
+		logger.debug("Deleting emoji Id %d", req.params.id)
 		const result = await Emoji.delete(req.params.id)
+		logger.info("Emoji Id %d deleted", req.params.id)
 		io.emit("update")
 		res.send(result)
 	} catch (err) {
+		logger.error(`Error on deleting emoji Id %d: %O`, req.params.id, err)
 		res.status(500).send({
-			message: `Error on deleting emoji with id ${req.params.id}`
+			message: `Error on deleting emoji`
 		})
 	}
 }
 
+/**
+ * Query all emojis
+ * 
+ * @param {*} req - Request
+ * @param {*} res - Response
+ */
 exports.getAll = async (req, res) => {
 	let options = {}
 
@@ -112,16 +146,23 @@ exports.getAll = async (req, res) => {
 	}
 
 	try {
+		logger.debug("Getting all emojis: %O", options)
 		const result = await Emoji.getAll(options)
 		res.send(result)
 	} catch (err) {
+		logger.error(`Error on retrieving emojis: %O`, err)
 		res.status(500).send({
-			message:
-				err.message || "Some error occurred while retrieving emojis."
+			message: "Error on retrieving emojis"
 		})
 	}
 }
 
+/**
+ * Query emoji by id
+ * 
+ * @param {*} req - Request
+ * @param {*} res - Response
+ */
 exports.getById = async (req, res) => {
 	let errors = []
 	if (!Validation.isNumber(req.params.id)) {
@@ -140,16 +181,22 @@ exports.getById = async (req, res) => {
 	}
 
 	try {
+		logger.debug("Getting emoji id %d", req.params.id)
 		const result = await Emoji.getById(req.params.id)
 		res.send(result)
 	} catch (err) {
+		logger.error(`Error on retrieving emoji id $d: %O`, req.params.id, err)
 		res.status(500).send({
-			message:
-				err.message || `Some error occurred while retrieving emoji with id ${req.params.id}.`
+			message: `Error on retrieving emoji`
 		})
 	}
 }
 
+/**
+ * Validate emoji object
+ * 
+ * @param {object} req - Emoji object
+ */
 checkEmojiValidation = (emoji) => {
 	let errors = []
 	if (!Validation.isNumber(emoji.emojiId)) {

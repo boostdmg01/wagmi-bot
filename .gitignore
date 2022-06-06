@@ -1,7 +1,9 @@
 .DS_STORE
 volumes
+api/log
 client/.env
 client/log
 report/.env
 report/log
+bot/log
 .env.*

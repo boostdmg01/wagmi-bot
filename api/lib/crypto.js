@@ -1,7 +1,6 @@
 const crypto = require('crypto')
 
 exports.encrypt = (text, encryptionKey) => {
-	console.log(text, encryptionKey)
 	try {
 		let iv = crypto.randomBytes(16)
 		let cipher = crypto.createCipheriv('aes-256-cbc', Buffer.from(encryptionKey), iv)

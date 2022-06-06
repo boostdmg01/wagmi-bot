@@ -1,6 +1,13 @@
 const Elevation = require("../model/elevation.js")
 const Validation = require("../lib/validation")
+const logger = require("../lib/logger")
 
+/**
+ * Insert post elevation
+ * 
+ * @param {*} req - Request
+ * @param {*} res - Response
+ */
 exports.insert = async (req, res) => {
 	if (!req.body) {
 		res.status(400).send({
@@ -10,6 +17,7 @@ exports.insert = async (req, res) => {
 
 	const elevation = new Elevation(req.body)
 
+	/** Validation **/
 	let errors = []
 	if (!Validation.isNumber(elevation.oldMessageId)) {
 		errors.push({
@@ -39,6 +47,20 @@ exports.insert = async (req, res) => {
 		})
 	}
 
+	if (!Validation.isNumber(elevation.userId)) {
+		errors.push({
+			key: 'userId',
+			message: 'Not a number'
+		})
+	}
+
+	if (!Validation.isNotEmpty(elevation.username)) {
+		errors.push({
+			key: 'username',
+			message: 'Not a number'
+		})
+	}
+
 	if (errors.length) {
 		res.status(422).send({
 			message: 'Validation failed',
@@ -48,15 +70,35 @@ exports.insert = async (req, res) => {
 	}
 
 	try {
+		logger.debug("Inserting elevation: %O", elevation)
 		const result = await Elevation.insert(elevation)
+		logger.info("Elevation inserted")
 		res.send(result)
 	} catch (err) {
+		logger.error("Error inserting elevation: %O", err)
 		res.status(500).send({
 			message: `Error on inserting elevation`
 		})
 	}
 }
 
+/**
+ * Find elevations based on multiple conditions.
+ * Payload example:
+ * [
+ *		{
+ *			oldMessageId: MESSAGEID,
+ *			newChannelId: NEWCHANNELID
+ *		},
+ *		{
+ *			oldMessageId: MESSAGEID,
+ *			newChannelId: NEWCHANNELID2
+ *		}
+ *	]
+ * 
+ * @param {*} req - Request
+ * @param {*} res - Response
+ */
 exports.find = async (req, res) => {
 	if (!req.body) {
 		res.status(400).send({
@@ -65,17 +107,28 @@ exports.find = async (req, res) => {
 	}
 
 	try {
+		logger.debug("Finding elevations: %O", req.body)
 		const result = await Elevation.find(req.body)
 		res.send(result)
 	} catch (err) {
+		logger.error("Error on finding elevations: %O", err)
 		res.status(500).send({
-			message:
-				err.message || "Some error occurred while retrieving valuations."
+			message: "Error on finding elevations"
 		})
 	}
 }
 
-
+/**
+ * Find elevation based on conditions
+ * Payload example:
+ * {
+ *		oldMessageId: MESSAGEID,
+ *		newChannelId: NEWCHANNELID
+ *	}
+ * 
+ * @param {*} req - Request
+ * @param {*} res - Response
+ */
 exports.findOne = async (req, res) => {
 	if (!req.body) {
 		res.status(400).send({
@@ -84,54 +137,13 @@ exports.findOne = async (req, res) => {
 	}
 
 	try {
+		logger.debug("Finding an elevation: %O", req.body)
 		const result = await Elevation.findOne(req.body)
 		res.send(result)
 	} catch (err) {
+		logger.error("Error on finding an elevation: %O", err)
 		res.status(500).send({
-			message:
-				err.message || "Some error occurred while retrieving valuations."
-		})
-	}
-}
-
-exports.getAll = async (req, res) => {
-	let options = {}
-
-	let errors = []
-	
-	if (req.query.searchFilter) {
-		if (!Validation.isNotEmpty(req.query.searchFilter)) {
-			errors.push({
-				key: 'searchFilter',
-				message: 'Empty'
-			})
-		}
-		options.searchFilter = req.query.searchFilter
-	}
-
-	if (req.query.paginated) {
-		options.paginated = true
-		options.sortField = req.query.sortField
-		options.sortOrder = req.query.sortOrder
-		options.pageSize = parseInt(req.query.pageSize)
-		options.pageNo = parseInt(req.query.pageNo)
-	}
-
-	if (errors.length) {
-		res.status(422).send({
-			message: 'Validation failed',
-			errors
-		})
-		return
-	}
-
-	try {
-		const result = await Elevation.getAll(options)
-		res.send(result)
-	} catch (err) {
-		res.status(500).send({
-			message:
-				err.message || "Some error occurred while retrieving elevations."
+			message: "Error on finding an elevation"
 		})
 	}
 }

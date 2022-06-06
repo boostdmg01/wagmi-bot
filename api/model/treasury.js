@@ -1,11 +1,12 @@
 const sql = require("../lib/sql")
 const crypto = require("../lib/crypto")
 
-const Treasury = function (treasury) {
-	if (typeof treasury === "undefined") {
-		treasury = {}
-	}
-
+/**
+ * Treasury instance for a treasury
+ * 
+ * @param {object} treasury - treasury data
+ */
+const Treasury = function (treasury = {}) {
 	this.id = treasury.id || null
 	this.name = treasury.name || null
 	this.coinName = treasury.coinName || null
@@ -21,10 +22,10 @@ const Treasury = function (treasury) {
 	this.tokenDecimals = treasury.tokenDecimals || null
 	this.privateKey = treasury.privateKey || null
 	this.mnemonic = treasury.mnemonic || null
-	this.chainTypes = treasury.chainTypes || null
-	this.royalityEnabled = treasury.royalityEnabled || 0
-	this.royalityAddress = treasury.royalityAddress || null
-	this.royalityPercentage = treasury.royalityPercentage || null
+	this.chainOptions = treasury.chainOptions || null
+	this.royaltyEnabled = treasury.royaltyEnabled || 0
+	this.royaltyAddress = treasury.royaltyAddress || null
+	this.royaltyPercentage = treasury.royaltyPercentage || null
 	this.assetId = treasury.assetId || null
 	this.sendMinBalance = treasury.sendMinBalance || 1
 	this.sendExistentialDeposit = treasury.sendExistentialDeposit || 0
@@ -32,6 +33,12 @@ const Treasury = function (treasury) {
 	this.encryptionKey = treasury.encryptionKey || null
 }
 
+/**
+ * Insert treasury
+ * 
+ * @param {Treasury} treasury - treasury instance
+ * @returns {object} - result object
+ */
 Treasury.insert = async (treasury) => {
 	try {
 		if (treasury.privateKey !== null && treasury.privateKey !== "") {
@@ -41,7 +48,7 @@ Treasury.insert = async (treasury) => {
 			treasury.mnemonic = crypto.encrypt(treasury.mnemonic, treasury.encryptionKey)
 		}
 
-		await sql.execute("INSERT INTO treasury (name, elevationActive, elevationChannelId, elevationEmojiId, elevationAmount, type, rpcUrl, chainPrefix, mnemonic, chainTypes, privateKey, isNative, tokenAddress, tokenDecimals, coinName, royalityAddress, royalityEnabled, royalityPercentage, assetId, sendMinBalance, sendExistentialDeposit, parachainType) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", [
+		await sql.execute("INSERT INTO treasury (name, elevationActive, elevationChannelId, elevationEmojiId, elevationAmount, type, rpcUrl, chainPrefix, mnemonic, chainOptions, privateKey, isNative, tokenAddress, tokenDecimals, coinName, royaltyAddress, royaltyEnabled, royaltyPercentage, assetId, sendMinBalance, sendExistentialDeposit, parachainType) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", [
 			treasury.name,
 			treasury.elevationActive,
 			treasury.elevationChannelId,
@@ -51,84 +58,99 @@ Treasury.insert = async (treasury) => {
 			treasury.rpcUrl,
 			treasury.chainPrefix,
 			treasury.mnemonic,
-			treasury.chainTypes,
+			treasury.chainOptions,
 			treasury.privateKey,
 			treasury.isNative,
 			treasury.tokenAddress,
 			treasury.tokenDecimals,
 			treasury.coinName,
-			treasury.royalityAddress,
-			treasury.royalityEnabled,
-			treasury.royalityPercentage,
+			treasury.royaltyAddress,
+			treasury.royaltyEnabled,
+			treasury.royaltyPercentage,
 			treasury.assetId,
 			treasury.sendMinBalance,
 			treasury.sendExistentialDeposit,
 			treasury.parachainType,
 		])
 
-		console.log("Treasury inserted: ", treasury)
 		return { status: 200, message: "Treasury inserted" }
 	} catch (err) {
-		console.log("Error on treasury insert:", err)
 		throw err
 	}
 }
 
+/**
+ * Update treasury
+ * 
+ * @param {number} id - treasury id
+ * @param {Treasury} treasury - treasury instance
+ * @returns {object} - result object
+ */
 Treasury.update = async (id, treasury) => {
 	try {
+		let bindingKeys = [
+			'name',
+			'elevationActive',
+			'elevationChannelId',
+			'elevationEmojiId',
+			'elevationAmount',
+			'type',
+			'rpcUrl',
+			'chainPrefix',
+			'chainOptions',
+			'isNative',
+			'tokenAddress',
+			'tokenDecimals',
+			'coinName',
+			'royaltyAddress',
+			'royaltyEnabled',
+			'royaltyPercentage',
+			'assetId',
+			'sendMinBalance',
+			'sendExistentialDeposit',
+			'parachainType',
+		]
+
+		/** Do not update privateKey and mnemonic if not set */
 		if (treasury.privateKey !== null && treasury.privateKey !== "") {
 			treasury.privateKey = crypto.encrypt(treasury.privateKey, treasury.encryptionKey)
+			bindingKeys.push('privateKey')
 		}
 		if (treasury.mnemonic !== null  && treasury.mnemonic !== "") {
 			treasury.mnemonic = crypto.encrypt(treasury.mnemonic, treasury.encryptionKey)
+			bindingKeys.push('mnemonic')
 		}
 
-		await sql.execute("UPDATE treasury SET name = ?, elevationActive = ?, elevationChannelId = ?, elevationEmojiId = ?, elevationAmount = ?, type = ?, rpcUrl = ?, chainPrefix = ?, mnemonic = ?, chainTypes = ?, privateKey = ?, isNative = ?, tokenAddress = ?, tokenDecimals = ?, coinName = ?, royalityAddress = ?, royalityEnabled = ?, royalityPercentage = ?, assetId = ?, sendMinBalance = ?, sendExistentialDeposit = ?, parachainType = ? WHERE id = ?", [
-			treasury.name,
-			treasury.elevationActive,
-			treasury.elevationChannelId,
-			treasury.elevationEmojiId,
-			treasury.elevationAmount,
-			treasury.type,
-			treasury.rpcUrl,
-			treasury.chainPrefix,
-			treasury.mnemonic,
-			treasury.chainTypes,
-			treasury.privateKey,
-			treasury.isNative,
-			treasury.tokenAddress,
-			treasury.tokenDecimals,
-			treasury.coinName,
-			treasury.royalityAddress,
-			treasury.royalityEnabled,
-			treasury.royalityPercentage,
-			treasury.assetId,
-			treasury.sendMinBalance,
-			treasury.sendExistentialDeposit,
-			treasury.parachainType,
-			id
-		])
+		await sql.execute(`UPDATE treasury SET ${bindingKeys.map(e => e + ' = ?' ).join(", ")} WHERE id = ?`, [ ... bindingKeys.map(e => treasury[e]), treasury.id ])
 
-		console.log("Treasury updated: ", treasury)
 		return { status: 200, message: "Treasury updated" }
 	} catch (err) {
-		console.log("Error on treasury update:", err)
 		throw err
 	}
 }
 
+/**
+ * Delete treasury
+ * 
+ * @param {number} id - treasury id
+ * @returns {object} - result object
+ */
 Treasury.delete = async (id) => {
 	try {
 		await sql.execute("DELETE FROM treasury WHERE id = ?", [id])
 
-		console.log("Treasury deleted: ", id)
 		return { status: 200, message: "Treasury deleted" }
 	} catch (err) {
-		console.log("Error on treasury delete:", err)
 		throw err
 	}
 }
 
+/**
+ * Query all treasuries
+ * 
+ * @param {object} options - query options
+ * @return {array} - query results
+ */
 Treasury.getAll = async (options) => {
 	let defaults = {
 		searchFilter: '',
@@ -175,22 +197,32 @@ Treasury.getAll = async (options) => {
 			}
 		}
 	} catch (err) {
-		console.log("Error querying treasuries")
 		throw err
 	}
 }
 
+/**
+ * Query all treasuries valuations without sensitive data
+ * 
+ * @param {object} options - query options
+ * @return {array} - query results
+ */
 Treasury.getAllPublic = async () => {
 	try {
 		let [rows] = await sql.query(`SELECT id, name FROM treasury ORDER BY name ASC`)
 
 		return rows
 	} catch (err) {
-		console.log("Error querying treasuries")
 		throw err
 	}
 }
 
+/**
+ * Query treasury by id
+ * 
+ * @param {number} id - treasury id
+ * @return {Treasury} - result as treasury instance
+ */
 Treasury.getById = async (id) => {
 	try {
 		let [rows] = await sql.execute("SELECT * FROM treasury WHERE id = ? LIMIT 1", [id])
@@ -206,7 +238,6 @@ Treasury.getById = async (id) => {
 			return new Treasury()
 		}
 	} catch (err) {
-		console.log("Error querying treasury")
 		throw err
 	}
 }

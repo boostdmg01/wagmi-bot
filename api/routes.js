@@ -43,7 +43,6 @@ module.exports = (app) => {
 
 	const elevation = require("./controller/elevation.js")
 	router.post("/api/elevation/insert", elevation.insert)
-	router.get("/api/elevation/all", elevation.getAll)
 	router.post("/api/elevation/find", elevation.find)
 	router.post("/api/elevation/findOne", elevation.findOne)
 
@@ -52,7 +51,6 @@ module.exports = (app) => {
 	router.post("/api/valuation/insert", valuation.insert)
 	router.get("/api/valuation/all", valuation.getAll)
 	router.get("/api/valuation/public", valuation.getAllPublic)
-	router.post("/api/valuation/find", valuation.find)
 	router.post("/api/valuation/findOne", valuation.findOne)
 
 	app.use(router)

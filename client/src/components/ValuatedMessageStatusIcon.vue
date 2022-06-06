@@ -79,7 +79,7 @@ export default {
       if (this.status === 1) {
         return "Pending";
       } else if (this.status === 2) {
-        return "Paid";
+        return "Transaction submitted";
       } else if (this.status === 3) {
         return "Insufficient Balance";
       } else if (this.status === 4) {

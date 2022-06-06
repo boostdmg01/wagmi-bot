@@ -1,5 +1,29 @@
 # CHANGELOG
 
+## 1.0.5
+## Bugfixes
+* API: Fixed sending result of an inserted valuation
+
+## Changes
+* Global: Added ENVIRONMENT variable to .env (production|development) for logging purposes
+* API/Bot: Log functionality added
+* API/Bot: dotenv package removed since the enviroment variables get injected by docker-compose
+* API/Bot: Started adding simple documentation to API/Bot
+* API: Removed unused controller and model implementations
+* API: TransactionHandler now waits for a status for each substrate transaction
+* Bot: Refactored code and abstracting separate features into "actions" loaded by the bot
+* Client/Report: Relabeled "Paid" status for transactions to "Transaction submitted"
+
+## Breaking Changes
+* API: Typo fix royalities/royality -> royalties/royalty in database schemas and application logic
+* API: Renamed chainTypes to chainOptions and modified functionality to implement transaction options. Now represents an optional JSON object like this:
+```
+{
+    types: {}, # Defined API types for the chain
+    options: {} # Optional transaction options (ex. tip)
+}
+```
+
 ## 1.0.4
 ### Breaking Changes
 * Splitted public reportings page from admin dashboard, now living in a seperate container
