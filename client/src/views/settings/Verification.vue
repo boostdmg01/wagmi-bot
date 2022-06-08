@@ -25,6 +25,17 @@
               id="verification_dm_text"
             />
           </div>
+
+          <div class="mt-6">
+            <FormLabel for="verification_dm_success_text"
+              >Verification DM Success Text</FormLabel
+            >
+            <FormInput
+              type="textarea"
+              v-model="config.verification_dm_success_text"
+              id="verification_dm_success_text"
+            />
+          </div>
           <div class="mt-6">
             <FormLabel for="verification_intro_text"
               >Verification Introduction Text</FormLabel
@@ -145,6 +156,7 @@ export default {
       config: {
         introduction_channel_id: null,
         verification_channel_id: null,
+        verification_dm_success_text: "",
         verification_dm_text: "",
         verification_intro_text: "",
       },
@@ -169,6 +181,7 @@ export default {
         [
           "introduction_channel_id",
           "verification_channel_id",
+          "verification_dm_success_text",
           "verification_dm_text",
           "verification_intro_text",
         ],
