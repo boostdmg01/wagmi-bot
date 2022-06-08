@@ -1,7 +1,8 @@
 <template>
   <div>
-    <input
-      :type="type"
+    <div class="flex items-center">
+      <input
+      :type="currentType"
       :value="value"
       @input="updateValue($event.target.value)"
       :class="classes"
@@ -14,6 +15,8 @@
       rows="9"
       v-else
     ></textarea>
+    <i class="fas ml-4 cursor" :class="{'fa-eye-slash': currentType === 'password', 'fa-eye': currentType === 'text'}" v-if="type === 'password'" @click="toggleVisibility()"></i>
+    </div>
     <p class="text-red-700 pl-2 my-2" v-for="error in errors" :key="error">
       {{ error.message }}
     </p>
@@ -31,6 +34,11 @@ export default {
     errors: {
       type: Array,
       default: () => []
+    }
+  },
+  data() {
+    return {
+      currentType: this.type
     }
   },
   computed: {
@@ -51,6 +59,13 @@ export default {
     updateValue: function (value) {
       this.$emit("input", value);
     },
+    toggleVisibility: function() {
+      if (this.currentType !== 'password') {
+        this.currentType = 'password'
+      } else {
+        this.currentType = 'text'
+      }
+    }
   },
 };
 </script>

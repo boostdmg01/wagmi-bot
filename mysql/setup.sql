@@ -34,6 +34,7 @@ INSERT INTO `config` (`name`, `value`, `type`) VALUES
 ('unverified_role_id', '', 'string'),
 ('verification_channel_id', '', 'string'),
 ('verification_dm_text', '', 'string'),
+('verification_dm_success_text', '', 'string'),
 ('verification_intro_text', '', 'string');
 
 CREATE TABLE `elevation` (

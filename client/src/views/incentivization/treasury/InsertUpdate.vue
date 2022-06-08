@@ -177,7 +177,7 @@
               <FormLabel for="privateKey">Private Key</FormLabel>
               <FormInput
                 v-model="treasury.privateKey" :errors="getErrors('privateKey')"
-                type="textarea"
+                type="password"
                 id="privateKey"
               />
             </div>
@@ -244,7 +244,7 @@
               <FormLabel for="mnemonic">Mnemonic</FormLabel>
               <FormInput
                 v-model="treasury.mnemonic" :errors="getErrors('mnemonic')"
-                type="textarea"
+                type="password"
                 id="mnemonic"
               />
             </div>
@@ -298,7 +298,7 @@
           <div>
             <FormLabel for="encryptionKey">Encryption</FormLabel>
               <FormInput
-                v-model="treasury.encryptionKey" :errors="getErrors('encryptionKey')"
+                v-model="treasury.encryptionKey" type="password" :errors="getErrors('encryptionKey')"
                 id="encryptionKey"
               />
           </div>

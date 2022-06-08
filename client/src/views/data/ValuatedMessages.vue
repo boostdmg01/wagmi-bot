@@ -151,7 +151,7 @@
       <p class="my-4 text-sm">Please provide the encryption key and 2FA token</p>
       <div class="mt-6">
         <FormLabel for="encryptionKey">Encryption Key</FormLabel>
-        <FormInput v-model="encryptionKey" id="encryptionKey" />
+        <FormInput v-model="encryptionKey" type="password" id="encryptionKey" />
       </div>
       <div class="mt-6">
         <FormLabel for="twoFAToken">2FA Token</FormLabel>

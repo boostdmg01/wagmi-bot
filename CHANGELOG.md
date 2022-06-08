@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## 1.0.6
+## Changes
+* API: Added further validation for encryption key and RPC url inputs
+* API/Bot/Client: Added a verification DM success text field
+* Client: mnemonics, private key and encryption key are now password fields with visibility toggle
+
 ## 1.0.5
 ## Bugfixes
 * API: Fixed sending result of an inserted valuation

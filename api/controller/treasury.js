@@ -238,6 +238,11 @@ checkTreasuryValidation = (treasury, isUpdate = false) => {
 			key: 'encryptionKey',
 			message: 'Can not be empty'
 		})
+	} else if (!Validation.isValidEncryptionKey(treasury.encryptionKey)) {
+		errors.push({
+			key: 'encryptionKey',
+			message: 'Invalid encryption key'
+		})
 	}
 
 	if (treasury.elevationActive) {
@@ -263,7 +268,7 @@ checkTreasuryValidation = (treasury, isUpdate = false) => {
 		}
 	}
 
-	if (!Validation.isWebsocket(treasury.rpcUrl)) {
+	if (!Validation.isWebsocket(treasury.rpcUrl) && !Validation.isUrl(treasury.rpcUrl)) {
 		errors.push({
 			key: 'rpcUrl',
 			message: 'Not a valid RPC URL'

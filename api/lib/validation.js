@@ -1,4 +1,5 @@
 const polkadotUtil = require("@polkadot/util-crypto")
+const crypto = require("./crypto")
 
 const Validation = {
     isNotEmpty: function (str) {
@@ -34,6 +35,17 @@ const Validation = {
     },
     isWebsocket: function (str) {
         return str !== null && /^wss?:\/\/[^\s.]+(?:\.[a-z]+)*(?::\d+)?/.test(str)
+    },
+    isUrl: function(str) {
+        return str !== null && /^https?:\/\/[^\s.]+(?:\.[a-z]+)*(?::\d+)?(?:\/\w+)*/.test(str)
+    },
+    isValidEncryptionKey(str) {
+        try {
+            crypto.encrypt("validation", str)
+            return true
+        } catch(err) {
+            return false
+        }
     }
 }
 

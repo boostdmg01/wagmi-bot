@@ -4,6 +4,7 @@ const app = express()
 const cors = require("cors")
 const session = require("express-session")
 const twofactor = require("node-2fa")
+const Validation = require("./lib/validation")
 
 const authorizedUsers = process.env.API_AUTHORIZED_DISCORD_IDS.split(',')
 const apiKey = process.env.API_KEY
@@ -76,8 +77,13 @@ io.on("connection", socket => {
 			let twoFATokenValid = twofactor.verifyToken(process.env.API_TWOFA_KEY, data.twoFAToken, 1);
 			
 			if (twoFATokenValid !== null && twoFATokenValid.delta === 0) {
-				logger.info('Transactions triggered')
-				txHandler.run(socket, data.encryptionKey)
+				if (!Validation.isValidEncryptionKey(data.encryptionKey)) {
+					logger.error('Transactions triggered, invalid encryption key provided')
+					socket.emit('error', 'Encryption key invalid! Please retry!')
+				} else {
+					logger.info('Transactions triggered')
+					txHandler.run(socket, data.encryptionKey)
+				}
 			} else {
 				logger.error('Transactions triggered, invalid 2FA Token provided')
 				socket.emit('error', '2FA Token invalid! Please retry!')

@@ -149,7 +149,7 @@ class VerificationAction {
 											})
 
 										member.roles.add(config.newcomer_role_id)
-											.then(() => member.send('You are verified now! Please introduce yourself in #new-here'))
+											.then(() => member.send(config.verification_dm_success_text))
 											.catch(err => {
 												logger.error("Verification: Error adding Newcomer Role to user %s (ID: %s): %O", msg.author.tag, msg.author.id, err)
 											})
