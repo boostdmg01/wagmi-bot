@@ -233,6 +233,15 @@ class VerificationAction {
 	 * @param {Discord.User} user - user data
 	 */
 	handleMessageReactionAdd(messageReaction, user) {
+		if (messageReaction.partial) {
+			try {
+				await messageReaction.fetch()
+			} catch (err) {
+				logger.error("Director Elevation: Error on fetching reaction: %O", err)
+				return
+			}
+		}
+		
 		let { config } = API.getConfiguration()
 
 		this.client.guilds.fetch(process.env.BOT_GUILD_ID).then(guild => {

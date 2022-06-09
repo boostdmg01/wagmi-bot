@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## 1.0.7
+## Changes
+* API/Bot: Valuation message has been changed to be more clear how to verify your address if it is missing
+* Bot: Load data of partial messages for role elevation (Verification)
+
 ## 1.0.6
 ## Changes
 * API: Added further validation for encryption key and RPC url inputs

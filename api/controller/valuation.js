@@ -27,14 +27,10 @@ exports.insert = async (req, res) => {
 		/** Try to get user and check if needed address for payout has been submitted */
 		let userData = await User.getById(valuation.userId)
 
-		if (userData.id) {
-			if (req.body.treasuryType === 'substrate' && (userData.substrateAddress === null || userData.substrateAddress === "")) {
-				result.message = `One of your messages has been valuated with ${valuation.value} ${req.body.coinName}. Please provide a Substrate address to The Concierge to receive your payout.`
-			} else if (req.body.treasuryType === 'evm' && (userData.evmAddress === null || userData.evmAddress === "")) {
-				result.message = `One of your messages has been valuated with ${valuation.value} ${req.body.coinName}. Please provide an EVM address to The Concierge to receive your payout.`
-			}
-		} else {
-			result.message = `One of your messages has been valuated with ${valuation.value} ${req.body.coinName}. Please verify your credentials to The Concierge to receive your payout.`
+		if (req.body.treasuryType === 'substrate' && (!userData.id || userData.substrateAddress === null || userData.substrateAddress === "")) {
+			result.message = `One of your messages has been valuated with ${valuation.value} ${req.body.coinName}. Please provide a Substrate address to The Concierge to receive your payout. Type !wagmi and click on the "Substrate Address" button.`
+		} else if (req.body.treasuryType === 'evm' && (!userData.id || userData.evmAddress === null || userData.evmAddress === "")) {
+			result.message = `One of your messages has been valuated with ${valuation.value} ${req.body.coinName}. Please provide an EVM address to The Concierge to receive your payout. Type !wagmi and click on the "EVM Address" button.`
 		}
 
 		res.send(result)
