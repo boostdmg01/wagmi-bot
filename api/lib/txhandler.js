@@ -72,15 +72,16 @@ class TransactionHandler {
      * @param io - client socket receiving status updates
      * @param encryptionKey - encryptionKey sent by client for decrypting mnemonics/private keys
      */
-    async run(io, encryptionKey) {
+    async run(io, encryptionKey, treasuryId) {
         this.isRunning = true
         this.currentIo = io
         this.currentTransactionIndex = 1
         this.encryptionKey = encryptionKey
+        this.treasuryId = treasuryId
 
         /** Get all valuated messages and royalties to process **/
-        let [valuatedMessages] = await sql.query(`SELECT valuation.*, user.evmAddress, user.substrateAddress, treasury.coinName, treasury.name, treasury.type, treasury.rpcUrl, treasury.chainPrefix, treasury.mnemonic, treasury.isNative, treasury.parachainType, treasury.tokenAddress, treasury.tokenDecimals, treasury.chainOptions, treasury.privateKey, treasury.royaltyEnabled, treasury.royaltyAddress, treasury.royaltyPercentage, treasury.assetId, treasury.sendMinBalance, treasury.sendExistentialDeposit FROM valuation LEFT JOIN treasury ON (treasury.id = valuation.treasuryId) LEFT JOIN user ON (user.id = valuation.userId) WHERE transactionHash IS NULL ORDER BY valuation.timestamp ASC`)
-        let [royalties] = await sql.query(`SELECT valuation.*, treasury.coinName, treasury.name, treasury.type, treasury.rpcUrl, treasury.chainPrefix, treasury.mnemonic, treasury.isNative, treasury.parachainType, treasury.tokenAddress, treasury.tokenDecimals, treasury.chainOptions, treasury.privateKey, treasury.royaltyEnabled, treasury.royaltyAddress, treasury.royaltyPercentage, treasury.assetId, treasury.sendMinBalance, treasury.sendExistentialDeposit FROM valuation LEFT JOIN treasury ON (treasury.id = valuation.treasuryId) WHERE royaltyValue IS NOT NULL AND royaltyTransactionHash IS NULL ORDER BY valuation.timestamp ASC`)
+        let [valuatedMessages] = await sql.query(`SELECT valuation.*, user.evmAddress, user.substrateAddress, treasury.coinName, treasury.name, treasury.type, treasury.rpcUrl, treasury.chainPrefix, treasury.mnemonic, treasury.isNative, treasury.parachainType, treasury.tokenAddress, treasury.tokenDecimals, treasury.chainOptions, treasury.privateKey, treasury.royaltyEnabled, treasury.royaltyAddress, treasury.royaltyPercentage, treasury.assetId, treasury.sendMinBalance, treasury.sendExistentialDeposit FROM valuation LEFT JOIN treasury ON (treasury.id = valuation.treasuryId) LEFT JOIN user ON (user.id = valuation.userId) WHERE valuation.transactionHash IS NULL AND valuation.treasuryId = ? ORDER BY valuation.timestamp ASC`, [this.treasuryId])
+        let [royalties] = await sql.query(`SELECT valuation.*, treasury.coinName, treasury.name, treasury.type, treasury.rpcUrl, treasury.chainPrefix, treasury.mnemonic, treasury.isNative, treasury.parachainType, treasury.tokenAddress, treasury.tokenDecimals, treasury.chainOptions, treasury.privateKey, treasury.royaltyEnabled, treasury.royaltyAddress, treasury.royaltyPercentage, treasury.assetId, treasury.sendMinBalance, treasury.sendExistentialDeposit FROM valuation LEFT JOIN treasury ON (treasury.id = valuation.treasuryId) WHERE valuation.royaltyValue IS NOT NULL AND valuation.royaltyTransactionHash IS NULL AND valuation.treasuryId = ? ORDER BY valuation.timestamp ASC`, [this.treasuryId])
 
         this.currentTransactionTotal = valuatedMessages.length + royalties.length
 
@@ -136,6 +137,8 @@ class TransactionHandler {
                             message: `Your message has been valuated with ${row.value} ${row.coinName}, submitted to: ${address}
 ${row.messageLink}`
                         })
+
+                        logger.info('Transaction Handler: Transaction for valuation Id %d submitted: %s', row.id, transactionHash)
                     }
                 } else {
                     /** Process EVM Transaction **/
@@ -151,10 +154,10 @@ ${row.messageLink}`
                             message: `Your message has been valuated with ${row.value} ${row.coinName}, submitted to: ${row.evmAddress}
 ${row.messageLink}`
                         })
+
+                        logger.info('Transaction Handler: Transaction for valuation Id %d submitted: %s', row.id, transactionHash)
                     }
                 }
-
-                logger.info('Transaction Handler: Transaction for valuation Id %d submitted: %s', row.id, transactionHash)
             } catch (err) {
                 logger.error("Transaction Handler: Error on processing valuation Id %d: %O", row.id, err)
 

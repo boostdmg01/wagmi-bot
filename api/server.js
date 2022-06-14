@@ -5,6 +5,7 @@ const cors = require("cors")
 const session = require("express-session")
 const twofactor = require("node-2fa")
 const Validation = require("./lib/validation")
+const Treasury = require("./model/treasury")
 
 const authorizedUsers = process.env.API_AUTHORIZED_DISCORD_IDS.split(',')
 const apiKey = process.env.API_KEY
@@ -74,20 +75,31 @@ io.on("connection", socket => {
 			logger.error('Transactions triggered, but they are already processing')
 			socket.emit('error', 'Transactions are currently being processed')
 		} else {
-			let twoFATokenValid = twofactor.verifyToken(process.env.API_TWOFA_KEY, data.twoFAToken, 1);
-			
-			if (twoFATokenValid !== null && twoFATokenValid.delta === 0) {
-				if (!Validation.isValidEncryptionKey(data.encryptionKey)) {
-					logger.error('Transactions triggered, invalid encryption key provided')
-					socket.emit('error', 'Encryption key invalid! Please retry!')
+			Treasury.getById(data.treasuryId).then(treasury => {
+
+				if (treasury.id) {
+					let twoFATokenValid = twofactor.verifyToken(process.env.API_TWOFA_KEY, data.twoFAToken, 1);
+					
+					if (twoFATokenValid !== null && twoFATokenValid.delta === 0) {
+						if (!Validation.isValidEncryptionKey(data.encryptionKey)) {
+							logger.error('Transactions triggered, invalid encryption key provided')
+							socket.emit('error', 'Encryption key invalid! Please retry!')
+						} else {
+							logger.info('Transactions triggered')
+							txHandler.run(socket, data.encryptionKey, treasury.id)
+						}
+					} else {
+						logger.error('Transactions triggered, invalid 2FA Token provided')
+						socket.emit('error', '2FA Token invalid! Please retry!')
+					}
 				} else {
-					logger.info('Transactions triggered')
-					txHandler.run(socket, data.encryptionKey)
+					logger.error('Transactions triggered, treasury not found')
+					socket.emit('error', 'Please select a treasury!')
 				}
-			} else {
-				logger.error('Transactions triggered, invalid 2FA Token provided')
-				socket.emit('error', '2FA Token invalid! Please retry!')
-			}
+			}).catch(e => {
+				logger.error('Transactions triggered, treasury fetch failed')
+				socket.emit('error', 'Error occured on fetching the treasury!')
+			})
 		}
 	})
 })

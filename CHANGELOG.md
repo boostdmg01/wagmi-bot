@@ -1,5 +1,15 @@
 # CHANGELOG
 
+## 1.0.8
+## Bugfixes
+* API: Successful transactions throwing an exception because of logging the transactionHash out of scope
+* Bot: Missed async declaration for reaction handling method
+
+## Changes
+* API/Client: Added a treasury selection for processing only one treasury at a time
+* API: Removed valuation details from notification message sent to a member when a valuation has been submitted and the user did not submit the specific address yet
+* Bot: Stripping characters from Discord categories
+
 ## 1.0.7
 ## Changes
 * API/Bot: Valuation message has been changed to be more clear how to verify your address if it is missing

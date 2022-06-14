@@ -232,7 +232,7 @@ class VerificationAction {
 	 * @param {Discord.MessageReaction} messageReaction - reaction data
 	 * @param {Discord.User} user - user data
 	 */
-	handleMessageReactionAdd(messageReaction, user) {
+	async handleMessageReactionAdd(messageReaction, user) {
 		if (messageReaction.partial) {
 			try {
 				await messageReaction.fetch()

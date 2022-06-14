@@ -143,7 +143,7 @@ class ValuationAction {
             let channel = await this.client.channels.fetch(channelId)
 
             if (channel) {
-                source = channel.name + (source !== '' ? ' // ' : '') + source
+                source = channel.name.replaceAll('━', '') + (source !== '' ? ' ' : '') + source
                 if (channel.parentId) {
                     source = this.buildSourceName(channel.parentId, source)
                 }

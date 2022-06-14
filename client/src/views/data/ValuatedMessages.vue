@@ -148,7 +148,26 @@
 
 
     <confirm-dialogue ref="confirmDialogue">
-      <p class="my-4 text-sm">Please provide the encryption key and 2FA token</p>
+      <p class="my-4 text-sm">Please select the treasury you want to process and provide the encryption key and 2FA token</p>
+      <div class="mt-6">
+        <FormLabel for="treasuryTransaction">Treasury</FormLabel>
+        <multiselect
+                v-model="treasuryTransaction"
+                :allow-empty="false"
+                :showLabels="false"
+                :showPointer="false"
+                label="name"
+                track-by="id"
+                :options="treasuries"
+              >
+                <template slot="singleLabel" slot-scope="{ option }"
+                  ><div>{{ option.name }}</div></template
+                >
+                <template slot="option" slot-scope="{ option }"
+                  ><div>{{ option.name }}</div></template
+                >
+              </multiselect>
+      </div>
       <div class="mt-6">
         <FormLabel for="encryptionKey">Encryption Key</FormLabel>
         <FormInput v-model="encryptionKey" type="password" id="encryptionKey" />
@@ -246,6 +265,7 @@ export default {
     return {
       io: null,
       transactionGraph: null,
+      treasuryTransaction: null,
       twoFAToken: null,
       encryptionKey: null,
       valueGraph: null,
@@ -527,7 +547,8 @@ export default {
         this.transactionMessage = "Processing";
         this.io.getSocket().emit("process", {
           encryptionKey: this.encryptionKey,
-          twoFAToken: this.twoFAToken
+          twoFAToken: this.twoFAToken,
+          treasuryId: this.treasuryTransaction?.id
         });
       }
     },
