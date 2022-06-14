@@ -1,6 +1,7 @@
 version: "3.5"
 services:
     db:
+        container_name: db
         image: mariadb:10.5.8
         restart: always
         command: --default-authentication-plugin=mysql_native_password
@@ -15,6 +16,7 @@ services:
             - ./mysql/setup.sql:/docker-entrypoint-initdb.d/setup.sql
             - ./volumes/db/data:/var/lib/mysql
     api:
+        container_name: api
         build: ./api
         restart: always
         ports:
@@ -40,6 +42,7 @@ services:
         volumes:
             - ./api:/app
     bot:
+        container_name: bot
         build: ./bot
         restart: always
         ports:
@@ -56,6 +59,7 @@ services:
         volumes:
             - ./bot:/app
     client:
+        container_name: bot
         build: ./client
         restart: always
         ports:
@@ -67,6 +71,7 @@ services:
             - api
             - bot
     report:
+        container_name: report
         build: ./report
         restart: always
         ports:
