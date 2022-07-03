@@ -8,8 +8,8 @@
         <h2 class="text-xl font-semibold">Valuated Messages</h2>
         <div class="p-5 mt-6 w-full">
           <div class="flex flex-col lg:flex-row w-full justify-between">
-            <div class="w-full lg:w-5/12 my-4"><canvas id="graph-transaction-canvas h-80"></canvas></div>
-            <div class="w-full lg:w-5/12 my-4"><canvas id="graph-value-canvas h-80"></canvas></div>
+            <div class="w-full lg:w-5/12 my-4"><canvas id="graph-transaction-canvas" class="h-80"></canvas></div>
+            <div class="w-full lg:w-5/12 my-4"><canvas id="graph-value-canvas" class="h-80"></canvas></div>
           </div>
         </div>
         <div class="px-4 border rounded-lg bg-white border-gray-300 dark:border-gray-700 p-5 mt-6">
@@ -47,6 +47,8 @@
           <v-data-table :headers="headers" :items="valuations" :page.sync="page" :options.sync="options"
             :server-items-length="totalValuations" :loading="this.$root.isLoading" show-expand :mobile-breakpoint="0"
             hide-default-footer :single-expand="false" :expanded.sync="expanded" :items-per-page="10"
+      :sort-by.sync="options.sortBy"
+      :sort-desc.sync="options.sortDesc"
             class="elevation-1" @page-count="pageCount = $event">
             <template v-slot:expanded-item="{ headers, item }">
               <td :colspan="headers.length">
@@ -136,7 +138,10 @@ export default {
       transactionGraph: null,
       valueGraph: null,
       datepicker: null,
-      options: {},
+      options: {
+        sortBy: ['date'],
+        sortDesc: [true]
+      },
       page: 1,
       pageCount: 0,
       expanded: [],

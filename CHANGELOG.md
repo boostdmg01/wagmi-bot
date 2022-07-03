@@ -1,14 +1,21 @@
 # CHANGELOG
 
+## 1.1.1
+### Changes
+* Report: Default sort by timestamp in descending order
+### Bugfixes
+* Report: Graphs not rendering
+* Bot: Dockerfile fix for dockerize
+
 ## 1.1.0
-## Changes
+### Changes
 * All: Bumped image versions
 * API: TransactionHandler now will send only one message per user with aggregated payout data
 * API: If a transaction fails it will skip the next ones for that specific treasury (likely caused by insufficient balances)
 * Report: Report page refactored
 
 ## 1.0.8
-## Bugfixes
+### Bugfixes
 * API: Successful transactions throwing an exception because of logging the transactionHash out of scope
 * Bot: Missed async declaration for reaction handling method
 
@@ -18,21 +25,21 @@
 * Bot: Stripping characters from Discord categories
 
 ## 1.0.7
-## Changes
+### Changes
 * API/Bot: Valuation message has been changed to be more clear how to verify your address if it is missing
 * Bot: Load data of partial messages for role elevation (Verification)
 
 ## 1.0.6
-## Changes
+### Changes
 * API: Added further validation for encryption key and RPC url inputs
 * API/Bot/Client: Added a verification DM success text field
 * Client: mnemonics, private key and encryption key are now password fields with visibility toggle
 
 ## 1.0.5
-## Bugfixes
+### Bugfixes
 * API: Fixed sending result of an inserted valuation
 
-## Changes
+### Changes
 * Global: Added ENVIRONMENT variable to .env (production|development) for logging purposes
 * API/Bot: Log functionality added
 * API/Bot: dotenv package removed since the enviroment variables get injected by docker-compose
@@ -42,7 +49,7 @@
 * Bot: Refactored code and abstracting separate features into "actions" loaded by the bot
 * Client/Report: Relabeled "Paid" status for transactions to "Transaction submitted"
 
-## Breaking Changes
+### Breaking Changes
 * API: Typo fix royalities/royality -> royalties/royalty in database schemas and application logic
 * API: Renamed chainTypes to chainOptions and modified functionality to implement transaction options. Now represents an optional JSON object like this:
 ```
