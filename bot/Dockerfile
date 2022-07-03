@@ -1,4 +1,4 @@
-FROM node:17
+FROM node:current-alpine
 WORKDIR /app
 
 ENV DOCKERIZE_VERSION v0.6.0

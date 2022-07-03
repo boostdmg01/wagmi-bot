@@ -1,5 +1,12 @@
 # CHANGELOG
 
+## 1.1.0
+## Changes
+* All: Bumped image versions
+* API: TransactionHandler now will send only one message per user with aggregated payout data
+* API: If a transaction fails it will skip the next ones for that specific treasury (likely caused by insufficient balances)
+* Report: Report page refactored
+
 ## 1.0.8
 ## Bugfixes
 * API: Successful transactions throwing an exception because of logging the transactionHash out of scope

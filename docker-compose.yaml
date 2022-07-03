@@ -59,7 +59,7 @@ services:
         volumes:
             - ./bot:/app
     client:
-        container_name: bot
+        container_name: client
         build: ./client
         restart: always
         ports:

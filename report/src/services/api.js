@@ -2,16 +2,22 @@ import axios from 'axios'
 
 const API = function () {
     this.client = axios.create({
-        baseURL: process.env.VUE_APP_API_URL
+        baseURL: process.env.VUE_APP_API_REPORT_URL
     });
 
     this.request = async (endpoint, data = {}, method = 'GET') => {
         try {
-            return await this.client({
+            let options = {
                 url: endpoint,
-                method: method,
-                data: data
-            })
+                method: method
+            }
+
+            if (method === 'GET') {
+                options.params = data
+            } else {
+                options.data = data
+            }
+            return await this.client(options)
         } catch (error) {
             return this.onError(error)
         }

@@ -1,4 +1,4 @@
-FROM node:17
+FROM node:current-alpine
 WORKDIR /app
 
 CMD ["npm", "start"]

@@ -72,6 +72,7 @@ Add your saved information from preparation in the .env file in the project root
 **DATABASE_USER** - MySQL Username to use \
 **DATABASE_DBNAME** - MySQL Database name to use \
 **VUE_APP_API_URL** -  Your URL suffixed with /api/ (ex: http://localhost/api/)\
+**VUE_APP_API_REPORT_URL** -  Your Report URL suffixed with /api/ (ex: http://report/api/)\
 **VUE_APP_WEBSOCKET_API_URL** - Your URL with trailing slash (ex: http://localhost/) \
 **VUE_APP_DISCORD_OAUTH_LINK** - Generated Discord OAuth Link with identify scope\
 

@@ -1,9 +1,9 @@
 <template>
   <div class="flex flex-col">
     <div>
-      <span class="font-semibold">Post:</span>
-      <a target="_blank" :href="rowData.messageLink">{{
-        rowData.messageLink
+      <span class="font-semibold">Post:</span> 
+      <a target="_blank" :href="item.messageLink">{{
+        item.messageLink
       }}</a>
     </div>
   </div>
@@ -12,13 +12,10 @@
 <script>
 export default {
   props: {
-    rowData: {
+    item: {
       type: Object,
       required: true,
-    },
-    rowIndex: {
-      type: Number,
-    },
+    }
   },
 };
 </script>

@@ -25,6 +25,7 @@ class TransactionHandler {
     currentTransactionTotal = 0
     encryptionKey = null
     config = {}
+    failedTreasuries = []
     erc20Abi = [
         {
             "inputs": [
@@ -78,6 +79,7 @@ class TransactionHandler {
         this.currentTransactionIndex = 1
         this.encryptionKey = encryptionKey
         this.treasuryId = treasuryId
+        this.failedTreasuries = []
 
         /** Get all valuated messages and royalties to process **/
         let [valuatedMessages] = await sql.query(`SELECT valuation.*, user.evmAddress, user.substrateAddress, treasury.coinName, treasury.name, treasury.type, treasury.rpcUrl, treasury.chainPrefix, treasury.mnemonic, treasury.isNative, treasury.parachainType, treasury.tokenAddress, treasury.tokenDecimals, treasury.chainOptions, treasury.privateKey, treasury.royaltyEnabled, treasury.royaltyAddress, treasury.royaltyPercentage, treasury.assetId, treasury.sendMinBalance, treasury.sendExistentialDeposit FROM valuation LEFT JOIN treasury ON (treasury.id = valuation.treasuryId) LEFT JOIN user ON (user.id = valuation.userId) WHERE valuation.transactionHash IS NULL AND valuation.treasuryId = ? ORDER BY valuation.timestamp ASC`, [this.treasuryId])
@@ -110,7 +112,12 @@ class TransactionHandler {
      */
     async handleValuatedMessages(rows) {
         logger.info(`Transaction Handler: Handling %d message valuations`, rows.length)
+
+        let userAggregations = {}
+
         for (let row of rows) {
+            if (this.failedTreasuries.includes(row.treasuryId)) continue;
+
             logger.info(`Transaction Handler: Handling valuation Id %d valuated with %f %s`, row.id, row.value, row.coinName)
 
             /** Check if receiver has submitted a payout address (pre-validation done by the bot), if not set status = 5 **/
@@ -131,12 +138,19 @@ class TransactionHandler {
 
                         let address = polkadotUtil.encodeAddress(row.substrateAddress, row.chainPrefix)
 
-                        /** Inform user of the current payout **/
-                        botIo.emit('send', {
-                            userId: row.userId,
-                            message: `Your message has been valuated with ${row.value} ${row.coinName}, submitted to: ${address}
-${row.messageLink}`
-                        })
+                        if (!(row.userId in userAggregations)) {
+                            userAggregations[row.userId] = {}
+                        }
+
+                        if (!(row.treasuryId in userAggregations[row.userId])) {
+                            userAggregations[row.userId][row.treasuryId] = {
+                                coinName: row.coinName,
+                                value: 0,
+                                address
+                            }
+                        }
+
+                        userAggregations[row.userId][row.treasuryId].value += row.value
 
                         logger.info('Transaction Handler: Transaction for valuation Id %d submitted: %s', row.id, transactionHash)
                     }
@@ -148,18 +162,28 @@ ${row.messageLink}`
                         /** Main Transaction successful; set status = 2, save txHash and timestamp **/
                         await sql.execute('UPDATE valuation SET status = ?, transactionHash = ?, transactionTimestamp = ? WHERE id = ?', [2, transactionHash, Math.floor(Date.now() / 1000), row.id])
 
-                        /** Inform user of the current payout */
-                        botIo.emit('send', {
-                            userId: row.userId,
-                            message: `Your message has been valuated with ${row.value} ${row.coinName}, submitted to: ${row.evmAddress}
-${row.messageLink}`
-                        })
+                        if (!(row.userId in userAggregations)) {
+                            userAggregations[row.userId] = {}
+                        }
+
+                        if (!(row.treasuryId in userAggregations[row.userId])) {
+                            userAggregations[row.userId][row.treasuryId] = {
+                                coinName: row.coinName,
+                                value: 0,
+                                address: row.evmAddress
+                            }
+                        }
+
+                        userAggregations[row.userId][row.treasuryId].value += row.value
 
                         logger.info('Transaction Handler: Transaction for valuation Id %d submitted: %s', row.id, transactionHash)
                     }
                 }
             } catch (err) {
                 logger.error("Transaction Handler: Error on processing valuation Id %d: %O", row.id, err)
+                logger.error("Skipping next transactions for treasury '$s'", row.name)
+
+                this.failedTreasuries.push(row.treasuryId)
 
                 /** Something went wrong, set status for given error message **/
                 let status = 4
@@ -181,6 +205,21 @@ ${row.messageLink}`
             /** Update client transaction process **/
             this.currentIo.emit('processing', { current: this.currentTransactionIndex, total: this.currentTransactionTotal })
         }
+
+        /** Send payout information to users */
+        for (const userId in userAggregations) {
+            let payOuts = ['']
+            for (const treasuryId in userAggregations[userId]) {
+                const payOut = userAggregations[userId][treasuryId]
+
+                payOuts.push(`- ${payOut.value} ${payOut.coinName} to address: ${payOut.address}`)
+            }
+
+            botIo.emit('send', {
+                userId: row.userId,
+                message: 'Your messages have been valuated and submitted:' + payOuts.join("\n")
+            });
+        }
     }
     /**
      * Handle transactions for royalties of valuated messages
@@ -190,6 +229,8 @@ ${row.messageLink}`
     async handleRoyalties(rows) {
         logger.info(`Transaction Handler: Handling %d royalties`, rows.length)
         for (let row of rows) {
+            if (this.failedTreasuries.includes(row.treasuryId)) continue;
+
             logger.info(`Transaction Handler: Handling royalty for valuation Id %d`, row.id)
 
             try {
@@ -199,17 +240,22 @@ ${row.messageLink}`
 
                     /** Main Transaction successful; set royalty status = 2, save royalty txHash and royalty timestamp and set royalty flags if the balance has been bumped to minBalance and if existential deposit balance has been sent  **/
                     await sql.execute('UPDATE valuation SET royaltyStatus = ?, royaltyTransactionHash = ?,royaltyTransactionTimestamp = ?, royaltyMinBalanceBumped = ?, royaltySentExistentialDeposit = ? WHERE id = ?', [2, transactionHash, Math.floor(Date.now() / 1000), minBalanceBumped, sentExistentialDeposit, row.id])
+                
+                    logger.info('Transaction Handler: Royalty transaction for valuation Id %d submitted: %s', row.id, transactionHash)
                 } else {
                     /** Process Substrate Transaction */
                     let transactionHash = await this.submitEVMTransaction(row, true).catch(e => { throw e })
 
                     /** Main Transaction successful; set royalty status = 2, save royalty txHash and royalty timestamp  **/
                     await sql.execute('UPDATE valuation SET royaltyStatus = ?, royaltyTransactionHash = ?,royaltyTransactionTimestamp = ? WHERE id = ?', [2, transactionHash, Math.floor(Date.now() / 1000), row.id])
-                }
 
-                logger.info('Transaction Handler: Royalty transaction for valuation Id %d submitted: %s', row.id, transactionHash)
+                    logger.info('Transaction Handler: Royalty transaction for valuation Id %d submitted: %s', row.id, transactionHash)
+                }
             } catch (e) {
                 logger.error("Transaction Handler: Error on processing royalty for valuation Id %d: %O", row.id, err)
+                logger.error("Skipping next transactions for treasury '$s'", row.name)
+
+                this.failedTreasuries.push(row.treasuryId)
 
                 /** Something went wrong, set royalty status for given error message **/
                 let status = 4

@@ -3,6 +3,27 @@
 @tailwind utilities;
 
 
+.theme--light.v-pagination li > button {
+    @apply w-auto h-auto shadow-none inline-block cursor-pointer py-2 px-3 m-0 leading-tight text-gray-500 bg-white rounded-l-lg border border-solid border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white;
+    margin-left: -1px;
+}
+
+.theme--light.v-pagination li > button.v-pagination__item {
+    @apply rounded-none
+}
+
+.theme--light.v-pagination li:first-child > button {
+    @apply rounded-none rounded-l-lg
+}
+
+.theme--light.v-pagination li:last-child > button {
+    @apply rounded-none rounded-r-lg
+}
+
+.theme--light.v-pagination li > button.v-pagination__item--active{
+    @apply py-2 px-3 text-blue-600 bg-blue-50 border border-gray-300 hover:bg-blue-100 hover:text-blue-700 dark:border-gray-700 dark:bg-gray-700 dark:text-white;
+}
+
 .multiselect__tags, .multiselect__single {
     @apply bg-gray-50 border px-2.5 border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500;
 }
@@ -35,26 +56,58 @@
     @apply text-sm;
 }
 
-.pagination > a {
-    margin-left: -1px;
-}
-
-.vuetable th {
+.v-data-table__wrapper th {
     @apply text-sm font-medium text-left text-gray-900 border-b px-6 py-3.5;
 }
 
-.vuetable td {
+.v-data-table__wrapper td {
     @apply text-sm px-6 text-left py-3 border-b;
 }
 
-.vuetable tr:nth-child(2n) {
+.v-data-table__wrapper tr:nth-child(2n) {
     @apply bg-gray-50;
-}
-
-.vuetable tr.vuetable-detail-row {
-    @apply bg-gray-200
 }
 
 .mx-datepicker {
     width: 100%
+}
+
+.v-icon.v-icon {
+    font-size: 1rem;
+}
+
+.v-data-table-header__icon {
+    margin-left: 0.5rem;
+}
+
+.mx-icon-calendar, .mx-icon-clear {
+    right: 12px;
+}
+
+.mx-input {
+    height: auto;
+    padding: 10px 40px 10px 10px;
+    @apply bg-gray-50 rounded-lg shadow-none border-gray-300 hover:border-gray-300;
+}
+
+.v-data-table__wrapper th, .v-data-table__wrapper td {
+    @apply whitespace-nowrap
+}
+
+.v-data-table > .v-data-table__wrapper > table > tbody > tr > td, .v-data-table > .v-data-table__wrapper > table > thead > tr > th {
+    @apply py-2 px-3;
+    min-height: 40px;
+}
+
+.v-data-table__expand-icon {
+    top: -2px;
+}
+
+.v-icon.v-icon:after {
+    content: none;
+}
+
+.v-data-table > .v-data-table__wrapper > table > tbody > tr:not(.v-data-table__expanded__content) > td:last-child {
+    width: 90px;
+    text-align: center;
 }
