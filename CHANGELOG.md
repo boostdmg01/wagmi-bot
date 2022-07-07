@@ -1,5 +1,18 @@
 # CHANGELOG
 
+## 1.1.2
+### Changes
+API: Added secure comparison for API key
+API: TransactionHandler now skips only known issues
+API: Added session cookie settings
+API: Use session middleware only for requests without Bearer token
+API: Removed X-Powered-By Header
+Client/Report: API Requests sending credentials to accomodate cookie settings
+DB: Bumped version to 10.5.16
+
+### Bugfixes
+API: Fixed TransactionHandler exception when sending payout DMs
+
 ## 1.1.1
 ### Changes
 * Report: Default sort by timestamp in descending order

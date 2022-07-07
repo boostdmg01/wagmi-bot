@@ -2,7 +2,8 @@ import axios from 'axios'
 
 const API = function () {
     this.client = axios.create({
-        baseURL: process.env.VUE_APP_API_REPORT_URL
+        baseURL: process.env.VUE_APP_API_REPORT_URL,
+        withCredentials: true
     });
 
     this.request = async (endpoint, data = {}, method = 'GET') => {

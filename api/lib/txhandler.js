@@ -181,9 +181,6 @@ class TransactionHandler {
                 }
             } catch (err) {
                 logger.error("Transaction Handler: Error on processing valuation Id %d: %O", row.id, err)
-                logger.error("Skipping next transactions for treasury '$s'", row.name)
-
-                this.failedTreasuries.push(row.treasuryId)
 
                 /** Something went wrong, set status for given error message **/
                 let status = 4
@@ -195,6 +192,11 @@ class TransactionHandler {
                     } else if (err.message === "Invalid encryption key") {
                         status = 7
                     }
+                }
+
+                if (status != 4) {
+                    logger.error("Skipping next transactions for treasury '%s'", row.name)
+                    this.failedTreasuries.push(row.treasuryId)
                 }
 
                 await sql.execute('UPDATE valuation SET status = ? WHERE id = ?', [status, row.id])
@@ -216,7 +218,7 @@ class TransactionHandler {
             }
 
             botIo.emit('send', {
-                userId: row.userId,
+                userId: userId,
                 message: 'Your messages have been valuated and submitted:' + payOuts.join("\n")
             });
         }
@@ -253,9 +255,6 @@ class TransactionHandler {
                 }
             } catch (e) {
                 logger.error("Transaction Handler: Error on processing royalty for valuation Id %d: %O", row.id, err)
-                logger.error("Skipping next transactions for treasury '$s'", row.name)
-
-                this.failedTreasuries.push(row.treasuryId)
 
                 /** Something went wrong, set royalty status for given error message **/
                 let status = 4
@@ -267,6 +266,11 @@ class TransactionHandler {
                     } else if (e.message === "Invalid encryption key") {
                         status = 7
                     }
+                }
+
+                if (status != 4) {
+                    logger.error("Skipping next transactions for treasury '%s'", row.name)
+                    this.failedTreasuries.push(row.treasuryId)
                 }
 
                 await sql.execute('UPDATE valuation SET royaltyStatus = ? WHERE id = ?', [status, row.id])

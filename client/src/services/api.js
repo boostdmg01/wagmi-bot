@@ -3,7 +3,8 @@ import router from '@/router/index'
 
 const API = function () {
     this.client = axios.create({
-        baseURL: process.env.VUE_APP_API_URL
+        baseURL: process.env.VUE_APP_API_URL,
+        withCredentials: true
     });
 
     this.request = async (endpoint, data = {}, method = 'GET') => {

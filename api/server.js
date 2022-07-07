@@ -6,9 +6,12 @@ const session = require("express-session")
 const twofactor = require("node-2fa")
 const Validation = require("./lib/validation")
 const Treasury = require("./model/treasury")
+const compare = require("secure-compare")
 
 const authorizedUsers = process.env.API_AUTHORIZED_DISCORD_IDS.split(',')
 const apiKey = process.env.API_KEY
+const cookieDomain = process.env.API_COOKIE_DOMAIN.indexOf('.') !== -1 ? process.env.API_COOKIE_DOMAIN : undefined
+const cookiePath = process.env.API_COOKIE_PATH
 const sessionSecret = process.env.API_SESSION_SECRET
 
 const http = require("http")
@@ -27,31 +30,43 @@ var unless = function (middleware, ...paths) {
 	}
 }
 
-app.use(cors())
+var nonAuth = function (middleware) {
+	return function (req, res, next) {
+		req.headers.authorization ? next() : middleware(req, res, next)
+	}
+}
+
+app.disable('x-powered-by')
+app.use(cors({ credentials: true }))
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
-app.use(session({
+app.use(nonAuth(session({
 	secret: sessionSecret,
 	resave: false,
 	saveUninitialized: false,
 	name: 'wagmi_bot',
 	cookie: {
-		expires: 3 * 60 * 60 * 1000,
+		maxAge: 3 * 60 * 60 * 1000,
+		sameSite: true,
+		domain: cookieDomain,
+		path: cookiePath
 	},
-}))
+})))
 
 app.use(unless((req, res, next) => {
 	if (req.headers) {
 		if (req.headers.authorization) {
 			const parts = req.headers.authorization.split(' ')
 			if (parts.length === 2 && parts[0] === 'Bearer') {
-				if (parts[1] === apiKey) {
+				if (compare(parts[1], apiKey) === true) {
 					next()
 					return
 				}
 			}
 		}
+	}
 
+	if (req.session) {
 		if (req.session.data) {
 			if (authorizedUsers.includes(req.session.data.discord_id)) {
 				next()
@@ -79,7 +94,7 @@ io.on("connection", socket => {
 
 				if (treasury.id) {
 					let twoFATokenValid = twofactor.verifyToken(process.env.API_TWOFA_KEY, data.twoFAToken, 1);
-					
+
 					if (twoFATokenValid !== null && twoFATokenValid.delta === 0) {
 						if (!Validation.isValidEncryptionKey(data.encryptionKey)) {
 							logger.error('Transactions triggered, invalid encryption key provided')
