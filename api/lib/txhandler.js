@@ -291,7 +291,7 @@ class TransactionHandler {
      */
     async submitSubstrateTransaction(data, royalty = false) {
         /** Define provder details for node connection, without retrying on error **/
-        const wsProvider = new WsProvider(data.rpcUrl, 0)
+        const wsProvider = new WsProvider(data.rpcUrl, 0, null, 90000)
         try {
             const keyRing = new Keyring({ type: 'sr25519' })
 
@@ -390,10 +390,24 @@ class TransactionHandler {
                             if (!dispatchError) {
                                 transactionPromiseResolve(txHash.toHex())
                             } else {
-                                transactionPromiseReject(new Error("Transaction Handler: Substrate Existential Deposit Transaction failed: " + dispatchError.toString()))
+                                if (dispatchError.isModule) {
+                                    const decoded = api.registry.findMetaError(dispatchError.asModule)
+                                    const { docs, name, section } = decoded
+                                    
+                                    transactionPromiseReject(new Error(`Transaction Handler:  Substrate Existential Deposit Transaction failed:  ${section}.${name}: ${docs.join(' ')}`))
+                                } else {
+                                    transactionPromiseReject(new Error("Transaction Handler: Substrate Existential Deposit Transaction failed: " + dispatchError.toString()))
+                                }
                             }
                         } else if (status.isInvalid || status.isRetracted || status.isDropped) {
-                            transactionPromiseReject(new Error("Transaction Handler: Substrate Existential Deposit Transaction failed: invalid transaction"))
+                            let txStatus = 'invalid'
+                            if (status.isRetracted) {
+                                txStatus = 'retracted'
+                            } else if (status.isDropped) {
+                                txStatus = 'dropped'
+                            }
+
+                            transactionPromiseReject(new Error(`Transaction Handler: Substrate Existential Deposit Transaction failed: transaction ${txStatus}`))
                         }
                     })
 
@@ -426,10 +440,24 @@ class TransactionHandler {
                         if (!dispatchError) {
                             transactionPromiseResolve(txHash.toHex())
                         } else {
-                            transactionPromiseReject(new Error("Transaction Handler: Substrate Transaction failed: " + dispatchError.toString()))
+                            if (dispatchError.isModule) {
+                                  const decoded = api.registry.findMetaError(dispatchError.asModule);
+                                  const { docs, name, section } = decoded;
+                                  
+                                  transactionPromiseReject(new Error(`Transaction Handler: Substrate Transaction failed:  ${section}.${name}: ${docs.join(' ')}`))
+                            } else {
+                                transactionPromiseReject(new Error("Transaction Handler: Substrate Transaction failed: " + dispatchError.toString()))
+                            }
                         }
                     } else if (status.isInvalid || status.isRetracted || status.isDropped) {
-                        transactionPromiseReject(new Error("Transaction Handler: Substrate Transaction failed: invalid transaction"))
+                        let txStatus = 'invalid'
+                        if (status.isRetracted) {
+                            txStatus = 'retracted'
+                        } else if (status.isDropped) {
+                            txStatus = 'dropped'
+                        }
+
+                        transactionPromiseReject(new Error(`Transaction Handler: Substrate Transaction failed: transaction ${txStatus}`))
                     }
                 })
 
@@ -483,10 +511,24 @@ class TransactionHandler {
                         if (!dispatchError) {
                             transactionPromiseResolve(txHash.toHex())
                         } else {
-                            transactionPromiseReject(new Error("Transaction Handler: Substrate Asset Transaction failed: " + dispatchError.toString()))
+                            if (dispatchError.isModule) {
+                                const decoded = api.registry.findMetaError(dispatchError.asModule);
+                                const { docs, name, section } = decoded;
+                                
+                                transactionPromiseReject(new Error(`Transaction Handler: Substrate Asset Transaction failed:  ${section}.${name}: ${docs.join(' ')}`))
+                            } else {
+                                transactionPromiseReject(new Error("Transaction Handler: Substrate Asset Transaction failed: " + dispatchError.toString()))
+                            }
                         }
                     } else if (status.isInvalid || status.isRetracted || status.isDropped) {
-                        transactionPromiseReject(new Error("Transaction Handler: Substrate Asset Transaction failed: invalid transaction"))
+                        let txStatus = 'invalid'
+                        if (status.isRetracted) {
+                            txStatus = 'retracted'
+                        } else if (status.isDropped) {
+                            txStatus = 'dropped'
+                        }
+
+                        transactionPromiseReject(new Error(`Transaction Handler: Substrate Asset Transaction failed: transaction ${txStatus}`))
                     }
                 })
 

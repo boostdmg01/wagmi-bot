@@ -58,8 +58,8 @@ Add your saved information from preparation in the .env file in the project root
 
 **API_KEY** - API Key needed for requests to be processed\
 **API_AUTHORIZED_DISCORD_IDS** - Discord User Ids which are eligible for using the admin frontend (comma-seperated) \
-**API_COOKIE_DOMAIN** - Domain for cookie
-**API_COOKIE_PATH** - Path for cookie
+**API_COOKIE_DOMAIN** - Domain for cookie\
+**API_COOKIE_PATH** - Path for cookie\
 **API_DISCORD_CLIENT_ID** - Discord Application Client ID\
 **API_DISCORD_CLIENT_SECRET** - Discord Application Client Secret\
 **API_DISCORD_REDIRECT_URI** - Redirect URL to Backend API for authentication (ex: http://localhost:8080/api/discord/login) \

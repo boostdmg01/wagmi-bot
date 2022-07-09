@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## 1.1.3
+### Changes
+API: Bumped @polkadot/api to 8.11.3
+API: Added RPC Timeouts and extended error logging to TransactionHandler
+
 ## 1.1.2
 ### Changes
 API: Added secure comparison for API key
