@@ -12,6 +12,7 @@ class ValuationAction {
      */
     register() {
         this.client.on("messageReactionAdd", async (messageReaction, user) => this.handleReactionAdd(messageReaction, user))
+		this.client.on("messageReactionRemove", async (messageReaction, user) => this.handleMessageReactionRemove(messageReaction, user))
     }
 
     /**
@@ -102,14 +103,19 @@ class ValuationAction {
                                     const valuatedMessage = response.data
 
                                     if (!valuatedMessage.id) {
-                                        API.request("http://api:8081/api/valuation/insert", insertValuationData, "POST").then(response => {
+                                        API.request("http://api:8081/api/valuation/insert", insertValuationData, "POST").then(async response => {
                                             if (response.data.message) {
-                                                messageReaction.message.author.send(response.data.message).catch(err => {
-                                                    logger.error("Valuation: Error sending message to user %s (ID: %s): %O", messageReaction.message.author.tag, messageReaction.message.author.id, err)
+                                                guild.members.fetch(insertValuationData.userId).then(author => {
+                                                    author.send(response.data.message).catch(err => {
+                                                        logger.error("Valuation: Error sending message to user %s (ID: %s): %O", messageReaction.message.author.tag, messageReaction.message.author.id, err)
+                                                    })
                                                 })
                                             }
+                                            let emoji = await this.client.emojis.cache.get(messageReaction._emoji.id)
 
-                                            logger.info(`Valuation: Message %s has been valuated with %f %s`, messageReaction.message.id, treasuryValuations[messageReaction._emoji.id].value, treasuryValuations[messageReaction._emoji.id].coinName)
+                                            this.client.log(`Valuation: Message has been valuated with ${treasuryValuations[messageReaction._emoji.id].value} ${treasuryValuations[messageReaction._emoji.id].coinName} <:${emoji.identifier}> by ${reactor.user.username}
+${messageReaction.message.url}`)
+                                            logger.info(`Valuation: Message %s has been valuated with %f %s <:%s}> by %s`, messageReaction.message.id, treasuryValuations[messageReaction._emoji.id].value, treasuryValuations[messageReaction._emoji.id].coinName, emoji.identifier, reactor.user.username)
                                         }).catch(err => {
                                             messageReaction.remove()
                                             logger.info("Valuation: Error on valuating messageReaction %O", messageReaction)
@@ -130,6 +136,76 @@ class ValuationAction {
             })
         }
     }
+
+    /**
+	 * Handle removed reaction; Remove valuation for this message
+	 * @param {Discord.MessageReaction} messageReaction - reaction data
+	 * @param {Discord.User} user - user data
+	 * @returns 
+	 */
+	async handleMessageReactionRemove(messageReaction, user) {
+		if (user.bot) return
+
+		if (messageReaction.partial) {
+			try {
+				await messageReaction.fetch()
+			} catch (err) {
+				logger.error('Verification: Error fetching reaction: %O', err)
+				return
+			}
+		}
+
+		let { config, treasuryValuations } = API.getConfiguration()
+
+        /** Check if the emoji which has been reacted with is one of the treasury emojis **/
+        if (messageReaction._emoji.id in treasuryValuations) {
+            this.client.guilds.fetch(process.env.BOT_GUILD_ID).then(guild => {
+                /** Fetch user and check if he has a Director role **/
+                guild.members.fetch(user.id).then(reactor => {
+                    if (reactor.roles.cache.has(config.director_role_id)) {
+
+                        /** Check if treasury emoji has a value set and if the message that has been reacted to is an elevated one **/
+                        if (treasuryValuations[messageReaction._emoji.id].value > 0) {
+                            API.request("http://api:8081/api/elevation/findOne", {
+                                newMessageId: messageReaction.message.id
+                            }, "POST").then(async elevationResponse => {
+                                const elevatedMessage = elevationResponse.data
+
+                                /** Base data for valuation based on current message **/
+                                let messageId = messageReaction.message.id
+
+                                /** If the current message is an elevated one, update data for the valuation based on the old message **/
+                                if (elevatedMessage.newMessageId) {
+                                    messageId = elevatedMessage.oldMessageId
+                                }
+
+                                /** Check if valuation exists **/
+                                API.request("http://api:8081/api/valuation/findOne", {
+                                    messageId: messageId,
+                                    discordEmojiId: messageReaction._emoji.id,
+                                    treasuryId: treasuryValuations[messageReaction._emoji.id].treasuryId
+                                }, "POST").then(response => {
+                                    const valuatedMessage = response.data
+
+                                    if (valuatedMessage.id) {
+                                        API.request(`http://api:8081/api/valuation/delete/${valuatedMessage.id}`, null, 'DELETE').then(async response => {
+                                            let emoji = await this.client.emojis.cache.get(messageReaction._emoji.id)
+
+		                                    this.client.log(`Valuation: Message valuation of ${treasuryValuations[messageReaction._emoji.id].value} ${treasuryValuations[messageReaction._emoji.id].coinName} <:${emoji.identifier}> has been removed by ${reactor.user.username}
+${messageReaction.message.url}`)
+                                            logger.info(`Valuation: Message valuation of %f %s <:%s> has been removed by %s`, treasuryValuations[messageReaction._emoji.id].value, treasuryValuations[messageReaction._emoji.id].coinName, emoji.identifier, reactor.user.username)
+                                        }).catch(err => logger.info(`Valuation: Error removing valuation: %O`, err))
+                                    }
+                                }).catch(err => logger.info(`Valuation: Error fetching valuation: %O`, err))
+                            })
+                        }
+                    }
+                })
+			}).catch(err => {
+                logger.error("Valuation: Error fetching guild: %O", err)
+            })
+        }
+	}
 
     /**
      * Build channel breadcrumb

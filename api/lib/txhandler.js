@@ -399,12 +399,14 @@ class TransactionHandler {
                                     transactionPromiseReject(new Error("Transaction Handler: Substrate Existential Deposit Transaction failed: " + dispatchError.toString()))
                                 }
                             }
-                        } else if (status.isInvalid || status.isRetracted || status.isDropped) {
+                        } else if (status.isInvalid || status.isUsurped || status.isDropped || status.isFinalityTimeout) {
                             let txStatus = 'invalid'
-                            if (status.isRetracted) {
-                                txStatus = 'retracted'
+                            if (status.isUsurped) {
+                                txStatus = 'usurped'
                             } else if (status.isDropped) {
                                 txStatus = 'dropped'
+                            } else if (status.isFinalityTimeout) {
+                                txStatus = 'timeout'
                             }
 
                             transactionPromiseReject(new Error(`Transaction Handler: Substrate Existential Deposit Transaction failed: transaction ${txStatus}`))
@@ -449,12 +451,14 @@ class TransactionHandler {
                                 transactionPromiseReject(new Error("Transaction Handler: Substrate Transaction failed: " + dispatchError.toString()))
                             }
                         }
-                    } else if (status.isInvalid || status.isRetracted || status.isDropped) {
+                    } else if (status.isInvalid || status.isUsurped || status.isDropped || status.isFinalityTimeout) {
                         let txStatus = 'invalid'
-                        if (status.isRetracted) {
-                            txStatus = 'retracted'
+                        if (status.isUsurped) {
+                            txStatus = 'usurped'
                         } else if (status.isDropped) {
                             txStatus = 'dropped'
+                        } else if (status.isFinalityTimeout) {
+                            txStatus = 'timeout'
                         }
 
                         transactionPromiseReject(new Error(`Transaction Handler: Substrate Transaction failed: transaction ${txStatus}`))
@@ -520,12 +524,14 @@ class TransactionHandler {
                                 transactionPromiseReject(new Error("Transaction Handler: Substrate Asset Transaction failed: " + dispatchError.toString()))
                             }
                         }
-                    } else if (status.isInvalid || status.isRetracted || status.isDropped) {
+                    } else if (status.isInvalid || status.isUsurped || status.isDropped || status.isFinalityTimeout) {
                         let txStatus = 'invalid'
-                        if (status.isRetracted) {
-                            txStatus = 'retracted'
+                        if (status.isUsurped) {
+                            txStatus = 'usurped'
                         } else if (status.isDropped) {
                             txStatus = 'dropped'
+                        } else if (status.isFinalityTimeout) {
+                            txStatus = 'timeout'
                         }
 
                         transactionPromiseReject(new Error(`Transaction Handler: Substrate Asset Transaction failed: transaction ${txStatus}`))

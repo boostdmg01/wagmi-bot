@@ -52,6 +52,7 @@ module.exports = (app) => {
 	router.get("/api/valuation/all", valuation.getAll)
 	router.get("/api/valuation/public", valuation.getAllPublic)
 	router.post("/api/valuation/findOne", valuation.findOne)
+	router.delete("/api/valuation/delete/:id", valuation.delete)
 
 	app.use(router)
 }

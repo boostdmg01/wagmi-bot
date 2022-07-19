@@ -99,6 +99,9 @@ class DirectorElevationAction {
 							userId: messageReaction.message.author.id,
 							username: messageReaction.message.author.username
 						}, "POST").then(() => {
+
+							this.client.log(`Director Elevation: Message elevated to <#${elevationInfo.channelId}> with ${messageReaction.count} emojis
+${messageReaction.message.url}`)
 							logger.info(`Director Elevation: Message %s elevated to <#%s> with %d emojis`, messageReaction.message.id, elevationInfo.channelId, messageReaction.count)
 						}).catch(err => {
 							logger.error("Director Elevation: API Error on inserting elevation")

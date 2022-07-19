@@ -1,5 +1,15 @@
 # CHANGELOG
 
+## 1.1.4
+### Changes
+API: Deleting valuation added
+Client: Added a bot section for logging setting
+Bot: Logging into a channel for normal elevations, director elevations and adding/removing message valuations
+
+### Bugfixes
+API: Transaction status "retracted" in the TransactionHandler was treated as an error, but is a warning
+Bot: Valuating an elevated message did message the bot and not the actual author of the message
+
 ## 1.1.3
 ### Changes
 API: Bumped @polkadot/api to 8.11.3

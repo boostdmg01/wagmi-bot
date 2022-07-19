@@ -246,4 +246,20 @@ Valuation.getAllPublic = async (options) => {
 	}
 }
 
+/**
+ * Delete valuation
+ * 
+ * @param {number} id - valuation id
+ * @returns {object} - result object
+ */
+ Valuation.delete = async (id) => {
+	try {
+		await sql.execute("DELETE FROM valuation WHERE id = ?", [id])
+
+		return { status: 200, message: "Valuation deleted" }
+	} catch (err) {
+		throw err
+	}
+}
+
 module.exports = Valuation

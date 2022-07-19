@@ -1,6 +1,7 @@
 const Valuation = require("../model/valuation.js")
 const User = require("../model/user.js")
 const logger = require("../lib/logger")
+const Validation = require("../lib/validation")
 
 /**
  * Insert message valuation
@@ -101,6 +102,48 @@ exports.getAll = async (req, res) => {
 		logger.error(`Error on retrieving valuations: %O`, err)
 		res.status(500).send({
 			message: "Error on retrieving valuations"
+		})
+	}
+}
+
+/**
+ * Delete valuation
+ * 
+ * @param {*} req - Request
+ * @param {*} res - Response
+ */
+ exports.delete = async (req, res) => {
+	if (!req.body) {
+		res.status(400).send({
+			message: "Invalid payload"
+		})
+	}
+
+	let errors = []
+	if (!Validation.isNumber(req.params.id)) {
+		errors.push({
+			key: 'id',
+			message: 'Not a number'
+		})
+	}
+
+	if (errors.length) {
+		res.status(422).send({
+			message: 'Validation failed',
+			errors
+		})
+		return
+	}
+
+	try {
+		logger.debug("Deleting valuation Id: %d", req.params.id)
+		const result = await Valuation.delete(req.params.id)
+		logger.info("Valuation Id %d deleted", req.params.id)
+		res.send(result)
+	} catch (err) {
+		logger.error(`Error on deleting valuation Id %d: %O`, req.params.id, err)
+		res.status(500).send({
+			message: `Error on deleting valuation`
 		})
 	}
 }

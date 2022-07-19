@@ -21,6 +21,13 @@ client.on('error', logger.error)
 client.on('warn', logger.warn)
 client.on('disconnect', () => { logger.info('Disconnected from discord.') })
 client.on('reconnecting', () => { logger.info('Reconnecting to discord.') })
+client.log = async (message) => {
+	const { config } = await API.loadConfiguration()
+	
+	guild.channels.fetch(config.log_channel_id).then(channel => {
+		channel.send(message)
+	})
+}
 
 client.once("ready", async () => {
 	guild = await client.guilds.fetch(process.env.BOT_GUILD_ID)

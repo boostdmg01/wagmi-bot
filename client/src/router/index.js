@@ -3,6 +3,7 @@ import VueRouter from 'vue-router'
 import VerifiedUsers from '@/views/data/VerifiedUsers'
 import VerificationSettings from '@/views/settings/Verification'
 import RolesSettings from '@/views/settings/Roles'
+import BotSettings from '@/views/settings/Bot'
 import MessageElevationSettings from '@/views/settings/MessageElevation'
 import TreasuryOverview from '@/views/incentivization/treasury/Overview'
 import TreasuryInsertUpdate from '@/views/incentivization/treasury/InsertUpdate'
@@ -35,6 +36,11 @@ const routes = [
     path: '/admin/roles',
     name: 'Roles - Settings',
     component: RolesSettings
+  },
+  {
+    path: '/admin/bot',
+    name: 'Bot - Settings',
+    component: BotSettings
   },
   {
     path: '/admin/elevation',

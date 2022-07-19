@@ -35,7 +35,8 @@ INSERT INTO `config` (`name`, `value`, `type`) VALUES
 ('verification_channel_id', '', 'string'),
 ('verification_dm_text', '', 'string'),
 ('verification_dm_success_text', '', 'string'),
-('verification_intro_text', '', 'string');
+('verification_intro_text', '', 'string'),
+('log_channel_id', '', 'string');
 
 CREATE TABLE `elevation` (
   `oldMessageId` varchar(20) NOT NULL,

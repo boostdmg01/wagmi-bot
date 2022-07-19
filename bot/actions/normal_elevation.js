@@ -110,6 +110,8 @@ class NormalElevationAction {
                         userId: messageReaction.message.author.id,
                         username: messageReaction.message.author.username
                     }, "POST").then(() => {
+                        this.client.log(`Normal Elevation: Message elevated to <#${elevationChannelId}> with ${messageReaction.count} emojis
+${messageReaction.message.url}`)
                         logger.info(`Normal Elevation: Message %s elevated to <#%s> with %d emojis`, messageReaction.message.id, elevationChannelId, messageReaction.count)
                     }).catch(err => {
                         logger.error("Normal Elevation: API Error on inserting elevation")
