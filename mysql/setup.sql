@@ -112,6 +112,15 @@ CREATE TABLE `valuation` (
   `royaltySentExistentialDeposit` tinyint(1) NOT NULL DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+CREATE TABLE `existential_deposit` (
+  `userId` varchar(20) NOT NULL,
+  `chainPrefix` int(4) NOT NULL,
+  `transactionHash` varchar(255) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+ALTER TABLE `existential_deposit`
+  ADD UNIQUE KEY `userId` (`userId`,`chainPrefix`);
+COMMIT;
 
 ALTER TABLE `config`
   ADD PRIMARY KEY (`name`);

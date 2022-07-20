@@ -362,60 +362,71 @@ class TransactionHandler {
             let transactionPromiseResolve = null
             let transactionPromiseReject = null
 
-            /** Treasury setting, send existential deposit to receiver */
+            /** Treasury setting, send existential deposit to receiver **/
             if (data.sendExistentialDeposit === 1) {
-                /** Get existential deposit constant **/
-                const existentialDeposit = api.consts.balances.existentialDeposit.toBn()
+                /** Check if this user has already received existential deposit for this substrate chain **/
+                let [existentialDeposits] = await sql.query(`SELECT * FROM existential_deposit WHERE userId = ? AND chainPrefix = ? LIMIT 1`, [data.c])
 
-                /** Get receiver balance and payout wallet balance **/
-                const receiverBalance = (await api.query.system.account(receiverAddress)).data.free.toBn()
-                const accountBalance = (await api.query.system.account(treasuryAccount.address)).data.free.toBn()
+                if (existentialDeposits.length == 0) {
+                    /** Get existential deposit constant **/
+                    const existentialDeposit = api.consts.balances.existentialDeposit.toBn()
 
-                /** Receiver has not enough existential deposit balance, set flag for existential deposit being sent **/
-                if (existentialDeposit.gt(receiverBalance)) {
-                    sentExistentialDeposit = 1
-                    /** Payout wallet has not enough balance for transaction **/
-                    if (existentialDeposit.gte(accountBalance.sub(tip))) {
-                        throw new Error('Insufficient Balance')
-                    }
+                    /** Get receiver balance and payout wallet balance **/
+                    const receiverBalance = (await api.query.system.account(receiverAddress)).data.free.toBn()
+                    const accountBalance = (await api.query.system.account(treasuryAccount.address)).data.free.toBn()
 
-                    let existentialTransactionPromise = new Promise(function (resolve, reject) {
-                        transactionPromiseResolve = resolve;
-                        transactionPromiseReject = reject;
-                    });
-
-                    /** Send existential deposit to receiver **/
-                    api.tx.balances.transferKeepAlive(polkadotUtil.encodeAddress(receiverAddress, data.chainPrefix), existentialDeposit).signAndSend(treasuryAccount, { ...chainOptions.options, nonce: -1 }, ({ status, txHash, dispatchError }) => {
-                        if (status.isInBlock || status.isFinalized) {
-                            if (!dispatchError) {
-                                transactionPromiseResolve(txHash.toHex())
-                            } else {
-                                if (dispatchError.isModule) {
-                                    const decoded = api.registry.findMetaError(dispatchError.asModule)
-                                    const { docs, name, section } = decoded
-                                    
-                                    transactionPromiseReject(new Error(`Transaction Handler:  Substrate Existential Deposit Transaction failed:  ${section}.${name}: ${docs.join(' ')}`))
-                                } else {
-                                    transactionPromiseReject(new Error("Transaction Handler: Substrate Existential Deposit Transaction failed: " + dispatchError.toString()))
-                                }
-                            }
-                        } else if (status.isInvalid || status.isUsurped || status.isDropped || status.isFinalityTimeout) {
-                            let txStatus = 'invalid'
-                            if (status.isUsurped) {
-                                txStatus = 'usurped'
-                            } else if (status.isDropped) {
-                                txStatus = 'dropped'
-                            } else if (status.isFinalityTimeout) {
-                                txStatus = 'timeout'
-                            }
-
-                            transactionPromiseReject(new Error(`Transaction Handler: Substrate Existential Deposit Transaction failed: transaction ${txStatus}`))
+                    /** Receiver has not enough existential deposit balance, set flag for existential deposit being sent **/
+                    if (existentialDeposit.gt(receiverBalance)) {
+                        sentExistentialDeposit = 1
+                        /** Payout wallet has not enough balance for transaction **/
+                        if (existentialDeposit.gte(accountBalance.sub(tip))) {
+                            throw new Error('Insufficient Balance')
                         }
-                    })
 
-                    let existentialDepositTxHash = await existentialTransactionPromise
+                        let existentialTransactionPromise = new Promise(function (resolve, reject) {
+                            transactionPromiseResolve = resolve;
+                            transactionPromiseReject = reject;
+                        });
 
-                    logger.info("Transaction Handler: Substrate Existential Deposit Transaction submiited: %s", existentialDepositTxHash)
+                        /** Send existential deposit to receiver **/
+                        api.tx.balances.transferKeepAlive(polkadotUtil.encodeAddress(receiverAddress, data.chainPrefix), existentialDeposit).signAndSend(treasuryAccount, { ...chainOptions.options, nonce: -1 }, ({ status, txHash, dispatchError }) => {
+                            if (status.isInBlock || status.isFinalized) {
+                                if (!dispatchError) {
+                                    transactionPromiseResolve(txHash.toHex())
+                                } else {
+                                    if (dispatchError.isModule) {
+                                        const decoded = api.registry.findMetaError(dispatchError.asModule)
+                                        const { docs, name, section } = decoded
+                                        
+                                        transactionPromiseReject(new Error(`Transaction Handler:  Substrate Existential Deposit Transaction failed:  ${section}.${name}: ${docs.join(' ')}`))
+                                    } else {
+                                        transactionPromiseReject(new Error("Transaction Handler: Substrate Existential Deposit Transaction failed: " + dispatchError.toString()))
+                                    }
+                                }
+                            } else if (status.isInvalid || status.isUsurped || status.isDropped || status.isFinalityTimeout) {
+                                let txStatus = 'invalid'
+                                if (status.isUsurped) {
+                                    txStatus = 'usurped'
+                                } else if (status.isDropped) {
+                                    txStatus = 'dropped'
+                                } else if (status.isFinalityTimeout) {
+                                    txStatus = 'timeout'
+                                }
+
+                                transactionPromiseReject(new Error(`Transaction Handler: Substrate Existential Deposit Transaction failed: transaction ${txStatus}`))
+                            }
+                        })
+
+                        let existentialDepositTxHash = await existentialTransactionPromise
+
+                        await sql.execute("INSERT INTO existential_deposit (userId, chainPrefix, transactionHash) VALUES (?, ?, ?)", [
+                            data.userId,
+                            data.chainPrefix,
+                            existentialDepositTxHash
+                        ])
+
+                        logger.info("Transaction Handler: Substrate Existential Deposit Transaction submiited: %s", existentialDepositTxHash)
+                    }
                 }
             }
 

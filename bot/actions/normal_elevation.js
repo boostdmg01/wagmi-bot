@@ -65,7 +65,10 @@ class NormalElevationAction {
 
         messageReaction.message.react(config.elevation_emoji_id)
 
-        if (messageReaction.count >= config.elevation_required_emojis) {
+        const message = await messageReaction.message.channel.messages.fetch(messageReaction.message.id)
+        const reactionCount = message.reactions.cache.get(config.elevation_emoji_id).count
+
+        if (reactionCount >= config.elevation_required_emojis) {
             /** Check if message has already been valuated, if already elevated do nothing **/
             API.request("http://api:8081/api/elevation/find", [
                 {
@@ -110,9 +113,9 @@ class NormalElevationAction {
                         userId: messageReaction.message.author.id,
                         username: messageReaction.message.author.username
                     }, "POST").then(() => {
-                        this.client.log(`Normal Elevation: Message elevated to <#${elevationChannelId}> with ${messageReaction.count} emojis
+                        this.client.log(`Normal Elevation: Message elevated to <#${elevationChannelId}> with ${reactionCount} emojis
 ${messageReaction.message.url}`)
-                        logger.info(`Normal Elevation: Message %s elevated to <#%s> with %d emojis`, messageReaction.message.id, elevationChannelId, messageReaction.count)
+                        logger.info(`Normal Elevation: Message %s elevated to <#%s> with %d emojis`, messageReaction.message.id, elevationChannelId, reactionCount)
                     }).catch(err => {
                         logger.error("Normal Elevation: API Error on inserting elevation")
                     })

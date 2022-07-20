@@ -82,8 +82,45 @@ exports.findOne = async (req, res) => {
 exports.getAll = async (req, res) => {
 	let options = {}
 
+	let errors = []
+
 	if (req.query.searchFilter) {
-		options.searchFilter = JSON.parse(req.query.searchFilter)
+		try {
+			options.searchFilter = JSON.parse(req.query.searchFilter)
+
+			if (options.searchFilter.dateStart && !Validation.isNumber(options.searchFilter.dateStart)) {
+				errors.push({
+					key: 'searchFilter.dateStart',
+					message: 'Not a number'
+				})
+			}
+	
+			if (options.searchFilter.dateEnd && !Validation.isNumber(options.searchFilter.dateEnd)) {
+				errors.push({
+					key: 'searchFilter.dateEnd',
+					message: 'Not a number'
+				})
+			}
+	
+			if (options.searchFilter.treasuryId && !Validation.isNumber(options.searchFilter.treasuryId)) {
+				errors.push({
+					key: 'searchFilter.treasuryId',
+					message: 'Not a number'
+				})
+			}
+	
+			if (options.searchFilter.status && (options.searchFilter.status >= 1 && options.searchFilter.status <= 3)) {
+				errors.push({
+					key: 'searchFilter.status',
+					message: 'Not a valid status filter'
+				})
+			}
+		} catch(e) {
+			errors.push({
+				key: 'searchFilter',
+				message: 'Invalid JSON'
+			})
+		}
 	}
 
 	if (req.query.paginated) {
@@ -92,6 +129,43 @@ exports.getAll = async (req, res) => {
 		options.sortOrder = req.query.sortOrder
 		options.pageSize = parseInt(req.query.pageSize)
 		options.pageNo = parseInt(req.query.pageNo)
+
+		let validSortFields = ['valuation.timestamp', 'valuation.source', 'valuation.status', 'valuation.username', 'treasury.name']
+		if (!validSortFields.includes(options.sortField)) {
+			errors.push({
+				key: 'sortField',
+				message: 'Not a valid sort field'
+			})
+		}
+
+		if (options.sortOrder !== "asc" && options.sortOrder !== "desc") {
+			errors.push({
+				key: 'sortOrder',
+				message: 'Not a valid sort order'
+			})
+		}
+
+		if (!Validation.isNumber(options.pageSize)) {
+			errors.push({
+				key: 'pageSize',
+				message: 'Not a valid page size'
+			})			
+		}
+
+		if (!Validation.isNumber(options.pageNo)) {
+			errors.push({
+				key: 'pageNo',
+				message: 'Not a valid page number'
+			})			
+		}
+	}
+
+	if (errors.length) {
+		res.status(422).send({
+			message: 'Validation failed',
+			errors
+		})
+		return
 	}
 
 	try {
@@ -157,8 +231,45 @@ exports.getAll = async (req, res) => {
 exports.getAllPublic = async (req, res) => {
 	let options = {}
 
+	let errors = []
+
 	if (req.query.searchFilter) {
-		options.searchFilter = JSON.parse(req.query.searchFilter)
+		try {
+			options.searchFilter = JSON.parse(req.query.searchFilter)
+
+			if (options.searchFilter.dateStart && !Validation.isNumber(options.searchFilter.dateStart)) {
+				errors.push({
+					key: 'searchFilter.dateStart',
+					message: 'Not a number'
+				})
+			}
+	
+			if (options.searchFilter.dateEnd && !Validation.isNumber(options.searchFilter.dateEnd)) {
+				errors.push({
+					key: 'searchFilter.dateEnd',
+					message: 'Not a number'
+				})
+			}
+	
+			if (options.searchFilter.treasuryId && !Validation.isNumber(options.searchFilter.treasuryId)) {
+				errors.push({
+					key: 'searchFilter.treasuryId',
+					message: 'Not a number'
+				})
+			}
+	
+			if (options.searchFilter.status && (options.searchFilter.status >= 1 && options.searchFilter.status <= 3)) {
+				errors.push({
+					key: 'searchFilter.status',
+					message: 'Not a valid status filter'
+				})
+			}
+		} catch(e) {
+			errors.push({
+				key: 'searchFilter',
+				message: 'Invalid JSON'
+			})
+		}
 	}
 
 	if (req.query.paginated) {
@@ -167,6 +278,43 @@ exports.getAllPublic = async (req, res) => {
 		options.sortOrder = req.query.sortOrder
 		options.pageSize = parseInt(req.query.pageSize)
 		options.pageNo = parseInt(req.query.pageNo)
+
+		let validSortFields = ['valuation.timestamp', 'valuation.source', 'valuation.status', 'treasury.name']
+		if (!validSortFields.includes(options.sortField)) {
+			errors.push({
+				key: 'sortField',
+				message: 'Not a valid sort field'
+			})
+		}
+
+		if (options.sortOrder !== "ASC" && options.sortOrder !== "DESC") {
+			errors.push({
+				key: 'sortOrder',
+				message: 'Not a valid sort order'
+			})
+		}
+
+		if (!Validation.isNumber(options.pageSize)) {
+			errors.push({
+				key: 'pageSize',
+				message: 'Not a valid page size'
+			})			
+		}
+
+		if (!Validation.isNumber(options.pageNo)) {
+			errors.push({
+				key: 'pageNo',
+				message: 'Not a valid page number'
+			})			
+		}
+	}
+
+	if (errors.length) {
+		res.status(422).send({
+			message: 'Validation failed',
+			errors
+		})
+		return
 	}
 
 	try {

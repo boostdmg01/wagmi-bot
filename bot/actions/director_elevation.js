@@ -55,10 +55,13 @@ class DirectorElevationAction {
 
 		messageReaction.message.react(config.elevation_emoji_id)
 
+		const message = await messageReaction.message.channel.messages.fetch(messageReaction.message.id)
+		const reactionCount = message.reactions.cache.get(messageReaction._emoji.id).count
+
 		/** Check if reacted emoji is tied to a treasury and if required amount for elevation is reached **/
 		if (messageReaction._emoji.id in treasuryElevations) {
 			var elevationInfo = treasuryElevations[messageReaction._emoji.id]
-			if (messageReaction.count >= elevationInfo.amount) {
+			if (reactionCount >= elevationInfo.amount) {
 				let emoji = await this.client.emojis.cache.get(messageReaction._emoji.id)
 	
 				/** Check if message has already been elevated, if already elevated do nothing **/
@@ -100,9 +103,9 @@ class DirectorElevationAction {
 							username: messageReaction.message.author.username
 						}, "POST").then(() => {
 
-							this.client.log(`Director Elevation: Message elevated to <#${elevationInfo.channelId}> with ${messageReaction.count} emojis
+							this.client.log(`Director Elevation: Message elevated to <#${elevationInfo.channelId}> with ${reactionCount} emojis
 ${messageReaction.message.url}`)
-							logger.info(`Director Elevation: Message %s elevated to <#%s> with %d emojis`, messageReaction.message.id, elevationInfo.channelId, messageReaction.count)
+							logger.info(`Director Elevation: Message %s elevated to <#%s> with %d emojis`, messageReaction.message.id, elevationInfo.channelId, reactionCount)
 						}).catch(err => {
 							logger.error("Director Elevation: API Error on inserting elevation")
 						})

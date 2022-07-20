@@ -1,32 +1,40 @@
 # CHANGELOG
 
+
+## 1.1.5
+
+### Changes
+* API: Validation added for data table controller methods
+* API: Existential deposit transactions are only triggered once per user per substrate chain
+### Bugfixes
+* Bot: messageReaction count from MessageReaction object sometimes is too high, fetching it on our own now
 ## 1.1.4
 ### Changes
-API: Deleting valuation added
-Client: Added a bot section for logging setting
-Bot: Logging into a channel for normal elevations, director elevations and adding/removing message valuations
+* API: Deleting valuation added
+* Client: Added a bot section for logging setting
+* Bot: Logging into a channel for normal elevations, director elevations and adding/removing message valuations
 
 ### Bugfixes
-API: Transaction status "retracted" in the TransactionHandler was treated as an error, but is a warning
-Bot: Valuating an elevated message did message the bot and not the actual author of the message
+* API: Transaction status "retracted" in the TransactionHandler was treated as an error, but is a warning
+* Bot: Valuating an elevated message did message the bot and not the actual author of the message
 
 ## 1.1.3
 ### Changes
-API: Bumped @polkadot/api to 8.11.3
-API: Added RPC Timeouts and extended error logging to TransactionHandler
+* API: Bumped @polkadot/api to 8.11.3
+* API: Added RPC Timeouts and extended error logging to TransactionHandler
 
 ## 1.1.2
 ### Changes
-API: Added secure comparison for API key
-API: TransactionHandler now skips only known issues
-API: Added session cookie settings
-API: Use session middleware only for requests without Bearer token
-API: Removed X-Powered-By Header
-Client/Report: API Requests sending credentials to accomodate cookie settings
-DB: Bumped version to 10.5.16
+* API: Added secure comparison for API key
+* API: TransactionHandler now skips only known issues
+* API: Added session cookie settings
+* API: Use session middleware only for requests without Bearer token
+* API: Removed X-Powered-By Header
+* Client/Report: API Requests sending credentials to accomodate cookie settings
+* DB: Bumped version to 10.5.16
 
 ### Bugfixes
-API: Fixed TransactionHandler exception when sending payout DMs
+* API: Fixed TransactionHandler exception when sending payout DMs
 
 ## 1.1.1
 ### Changes
