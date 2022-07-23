@@ -120,7 +120,6 @@ CREATE TABLE `existential_deposit` (
 
 ALTER TABLE `existential_deposit`
   ADD UNIQUE KEY `userId` (`userId`,`chainPrefix`);
-COMMIT;
 
 ALTER TABLE `config`
   ADD PRIMARY KEY (`name`);

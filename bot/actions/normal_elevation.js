@@ -5,14 +5,15 @@ const logger = require("../lib/logger")
 class NormalElevationAction {
     constructor(client) {
         this.client = client
-        this.register()
     }
 
     /**
      * Register event handlers
      */
     register() {
-        this.client.on("messageReactionAdd", async (messageReaction, user) => this.handleReactionAdd(messageReaction, user))
+        return {
+            "messageReactionAdd": async (messageReaction, user) => await this.handleReactionAdd(messageReaction, user)
+        }
     }
 
 	/**
@@ -22,18 +23,11 @@ class NormalElevationAction {
      * @param {Discord.User} user - user data
 	 */
     async handleReactionAdd(messageReaction, user) {
-        if (messageReaction.partial) {
-            try {
-                await messageReaction.fetch()
-            } catch (err) {
-                logger.error("Director Elevation: Error on fetching reaction: %O", err)
-                return
-            }
-        }
-
         if (user.bot) return
 
-        this.elevate(messageReaction)
+		if (messageReaction.message.channel.type !== Discord.ChannelType.DM) {
+            await this.elevate(messageReaction)
+        }
     }
 
 	/**
@@ -83,9 +77,9 @@ class NormalElevationAction {
                 const elevatedMessages = response.data
 
                 if (!elevatedMessages.length) {
-                    const embed = new Discord.MessageEmbed()
+                    const embed = new Discord.EmbedBuilder()
                         .setColor('#0099ff')
-                        .setAuthor(`${messageReaction.message.author.username} in  #${messageReaction.message.channel.name}`)
+                        .setAuthor({ name: `${messageReaction.message.author.username} in  #${messageReaction.message.channel.name}` })
                         .setURL(messageReaction.message.url)
                         .setTitle(elevationTitle)
                         .setDescription(messageReaction.message.content)

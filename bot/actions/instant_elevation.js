@@ -5,14 +5,15 @@ const logger = require("../lib/logger")
 class InstantElevationAction {
 	constructor(client) {
 		this.client = client
-		this.register()
 	}
 
     /**
      * Register event handlers
      */
 	register() {
-		this.client.on("messageCreate", async (msg) => this.handleMessage(msg))
+		return {
+			"messageCreate": async (msg) => await this.handleMessage(msg)
+		}
 	}
 
 	/**
@@ -20,11 +21,11 @@ class InstantElevationAction {
 	 * 
 	 * @param {Discord.Message} msg - message data
 	 */
-	handleMessage(msg) {
+	async handleMessage(msg) {
 		if (msg.author.bot) return
 
-        if (msg.type !== 'THREAD_CREATED') {
-            this.elevate(msg)
+        if (msg.channel.type !== Discord.ChannelType.DM && msg.type !== Discord.MessageType.ThreadCreated) {
+            await this.elevate(msg)
         }
 	}
 
@@ -48,9 +49,9 @@ class InstantElevationAction {
 			}
 
 			if (elevate) {
-				const embed = new Discord.MessageEmbed()
+				const embed = new Discord.EmbedBuilder()
 					.setColor('#0099ff')
-					.setAuthor(`${msg.author.username} in  #${msg.channel.name}`)
+					.setAuthor({ name: `${msg.author.username} in  #${msg.channel.name}` })
 					.setURL(msg.url)
 					.setTitle(elevationTitle)
 					.setDescription(msg.content)

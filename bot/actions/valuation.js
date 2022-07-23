@@ -4,15 +4,16 @@ const logger = require("../lib/logger")
 class ValuationAction {
     constructor(client) {
         this.client = client
-        this.register()
     }
 
     /**
      * Register event handlers
      */
     register() {
-        this.client.on("messageReactionAdd", async (messageReaction, user) => this.handleReactionAdd(messageReaction, user))
-		this.client.on("messageReactionRemove", async (messageReaction, user) => this.handleMessageReactionRemove(messageReaction, user))
+        return {
+            "messageReactionAdd": async (messageReaction, user) => await this.handleReactionAdd(messageReaction, user),
+		    "messageReactionRemove": async (messageReaction, user) => await this.handleMessageReactionRemove(messageReaction, user)
+        }
     }
 
     /**
@@ -22,18 +23,11 @@ class ValuationAction {
      * @param {Discord.User} user - user data
      */
     async handleReactionAdd(messageReaction, user) {
-        if (messageReaction.partial) {
-            try {
-                await messageReaction.fetch()
-            } catch (err) {
-                logger.error("Valuation: Error on fetching reaction: %O", err)
-                return
-            }
-        }
-
         if (user.bot) return
 
-        this.valuate(messageReaction, user)
+		if (messageReaction.message.channel.type !== Discord.ChannelType.DM) {
+            await this.valuate(messageReaction, user)
+        }
     }
 
     /**
@@ -145,15 +139,6 @@ ${messageReaction.message.url}`)
 	 */
 	async handleMessageReactionRemove(messageReaction, user) {
 		if (user.bot) return
-
-		if (messageReaction.partial) {
-			try {
-				await messageReaction.fetch()
-			} catch (err) {
-				logger.error('Verification: Error fetching reaction: %O', err)
-				return
-			}
-		}
 
 		let { config, treasuryValuations } = API.getConfiguration()
 

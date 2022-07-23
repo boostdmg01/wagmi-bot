@@ -11,8 +11,20 @@ const io = new Server(server)
 const API = require("./lib/api")
 
 const client = new Discord.Client({
-	partials: ["MESSAGE", "CHANNEL", "REACTION", "USER"],
-	intents: ["GUILDS", "GUILD_MEMBERS", "GUILD_MESSAGES", "GUILD_MESSAGE_REACTIONS", "DIRECT_MESSAGES"]
+	partials: [
+		Discord.Partials.Channel,
+		Discord.Partials.Message,
+		Discord.Partials.Reaction,
+		Discord.Partials.User
+	],
+	intents: [
+		Discord.GatewayIntentBits.Guilds,
+		Discord.GatewayIntentBits.MessageContent,
+		Discord.GatewayIntentBits.GuildMembers,
+		Discord.GatewayIntentBits.GuildMessages,
+		Discord.GatewayIntentBits.GuildMessageReactions,
+		Discord.GatewayIntentBits.DirectMessages
+	]
 })
 
 let guild = null
@@ -51,11 +63,11 @@ client.once("ready", async () => {
 		})
 
 		socket.on("verification", async (callback) => {
-			const embed = new Discord.MessageEmbed()
+			const embed = new Discord.EmbedBuilder()
 
 			const welcomeTitle = `Welcome to ${guild.name}!`
 
-			embed.addField(welcomeTitle, config.verification_intro_text)
+			embed.addFields({ name: welcomeTitle, value: config.verification_intro_text })
 
 			try {
 				const message = await client.channels.cache.get(config.verification_channel_id).send({ embeds: [embed] })
@@ -76,10 +88,40 @@ client.once("ready", async () => {
 const actionsPath = path.join(__dirname, 'actions');
 const actionFiles = fs.readdirSync(actionsPath).filter(file => file.endsWith('.js'));
 
+let actionHandlers = {}
+
 for (const file of actionFiles) {
 	const filePath = path.join(actionsPath, file);
-	const actionHandler = require(filePath);
-	new actionHandler(client)
+	const actionClass = require(filePath);
+	const actionInstance = new actionClass(client)
+
+	const handlers = actionInstance.register()
+	for (const eventName in handlers) {
+		if (!(eventName in actionHandlers)) {
+			actionHandlers[eventName] = []
+		}
+
+		actionHandlers[eventName].push(handlers[eventName])
+	}
+}
+
+for (const eventName in actionHandlers) {
+	client.on(eventName, async (... args) => {
+		if (eventName === "messageReactionAdd" || eventName === "messageReactionRemove") {
+			if (args[0].partial) {
+				try {
+					await args[0].fetch()
+				} catch (err) {
+					logger.error("Error on fetching reaction: %O", err)
+					return
+				}
+			}
+		}
+
+		for (const handler of actionHandlers[eventName]) {
+			await handler(... args)
+		}
+	})
 }
 
 client.login(process.env.BOT_TOKEN)

@@ -179,7 +179,8 @@ export default {
         {
           text: "Valuation",
           value: "valuation",
-          sortable: false,
+          sortField: "valuation.value",
+          sortable: true,
           align: "start",
         },
         {

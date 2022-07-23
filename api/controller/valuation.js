@@ -109,7 +109,7 @@ exports.getAll = async (req, res) => {
 				})
 			}
 	
-			if (options.searchFilter.status && (options.searchFilter.status >= 1 && options.searchFilter.status <= 3)) {
+			if (options.searchFilter.status && (options.searchFilter.status < 1 || options.searchFilter.status > 3)) {
 				errors.push({
 					key: 'searchFilter.status',
 					message: 'Not a valid status filter'
@@ -130,7 +130,7 @@ exports.getAll = async (req, res) => {
 		options.pageSize = parseInt(req.query.pageSize)
 		options.pageNo = parseInt(req.query.pageNo)
 
-		let validSortFields = ['valuation.timestamp', 'valuation.source', 'valuation.status', 'valuation.username', 'treasury.name']
+		let validSortFields = ['valuation.timestamp', 'valuation.source', 'valuation.status', 'valuation.username', 'treasury.name', 'valuation.value']
 		if (!validSortFields.includes(options.sortField)) {
 			errors.push({
 				key: 'sortField',
@@ -258,7 +258,7 @@ exports.getAllPublic = async (req, res) => {
 				})
 			}
 	
-			if (options.searchFilter.status && (options.searchFilter.status >= 1 && options.searchFilter.status <= 3)) {
+			if (options.searchFilter.status && (options.searchFilter.status < 1 || options.searchFilter.status > 3)) {
 				errors.push({
 					key: 'searchFilter.status',
 					message: 'Not a valid status filter'
@@ -279,7 +279,7 @@ exports.getAllPublic = async (req, res) => {
 		options.pageSize = parseInt(req.query.pageSize)
 		options.pageNo = parseInt(req.query.pageNo)
 
-		let validSortFields = ['valuation.timestamp', 'valuation.source', 'valuation.status', 'treasury.name']
+		let validSortFields = ['valuation.timestamp', 'valuation.source', 'valuation.status', 'treasury.name', 'valuation.value']
 		if (!validSortFields.includes(options.sortField)) {
 			errors.push({
 				key: 'sortField',

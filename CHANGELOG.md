@@ -1,8 +1,20 @@
 # CHANGELOG
 
+## 1.1.6
+### Changes
+API/Bot: Container changed to node:current-alpine3.16
+API: Added valuation value as valid sort field
+Bot: Refactored action handlers to prevent race conditions
+Client/Report: Sorting by valuation value now possible
+Client/Report: Added X-Frame-Options Header to nginx configuration
+Client/Report: Added server_tokens off in in nginx configuration
+Client/Report: Disabled js source map files
+Report: Refactored nginx-alpine image 1.23 including modsecurity
+
+### Bugfixes
+API: Fixed validation logic for status sort field in data table controller methods
 
 ## 1.1.5
-
 ### Changes
 * API: Validation added for data table controller methods
 * API: Existential deposit transactions are only triggered once per user per substrate chain

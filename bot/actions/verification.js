@@ -6,32 +6,34 @@ const logger = require("../lib/logger")
 class VerificationAction {
 	constructor(client) {
 		this.client = client
-		this.components = new Discord.MessageActionRow().addComponents(
-			new Discord.MessageButton()
+
+		this.components = new Discord.ActionRowBuilder().addComponents(
+			new Discord.ButtonBuilder()
 				.setCustomId('verify_evm')
 				.setLabel('EVM Address')
-				.setStyle('PRIMARY'),
-			new Discord.MessageButton()
+				.setStyle(Discord.ButtonStyle.Primary),
+			new Discord.ButtonBuilder()
 				.setCustomId('verify_substrate')
 				.setLabel('Substrate Address')
-				.setStyle('SECONDARY'),
-			new Discord.MessageButton()
+				.setStyle(Discord.ButtonStyle.Secondary),
+			new Discord.ButtonBuilder()
 				.setCustomId('verify_twitter')
 				.setLabel('Twitter')
-				.setStyle('PRIMARY'),
+				.setStyle(Discord.ButtonStyle.Primary),
 		)
-		this.register()
 	}
 
     /**
      * Register event handlers
      */
 	register() {
-		this.client.on("messageCreate", async (msg) => this.handleMessageCreate(msg))
-		this.client.on("interactionCreate", async (interaction) => this.handleInteractionCreate(interaction))
-		this.client.on("messageReactionRemove", async (messageReaction, user) => this.handleMessageReactionRemove(messageReaction, user))
-		this.client.on("messageReactionAdd", async (messageReaction, user) => this.handleMessageReactionAdd(messageReaction, user))
-		this.client.on("guildMemberAdd", async (member) => this.handleGuildMemberAdd(member))
+		return {
+			"messageCreate": async (msg) => await this.handleMessageCreate(msg),
+			"interactionCreate": async (interaction) => await this.handleInteractionCreate(interaction),
+			"messageReactionRemove": async (messageReaction, user) => await this.handleMessageReactionRemove(messageReaction, user),
+			"messageReactionAdd": async (messageReaction, user) => await this.handleMessageReactionAdd(messageReaction, user),
+			"guildMemberAdd": async (member) => await this.handleGuildMemberAdd(member)
+		 }
 	}
 
     /**
@@ -39,10 +41,10 @@ class VerificationAction {
      * 
      * @param {Discord.Interaction} interaction - interaction data
      */
-	handleInteractionCreate(interaction) {
-		if (interaction.type == "MESSAGE_COMPONENT") {
+	async handleInteractionCreate(interaction) {
+		if (interaction.type == Discord.InteractionType.MessageComponent) {
 			if (interaction.customId === 'verify_evm' || interaction.customId === 'verify_substrate' || interaction.customId === 'verify_twitter') {
-				this.handleVerification(interaction)
+				await this.handleVerification(interaction)
 			}
 		}
 	}
@@ -52,11 +54,11 @@ class VerificationAction {
 	 * 
 	 * @param {Discord.Message} msg - message data
 	 */
-	handleMessageCreate(msg) {
+	async handleMessageCreate(msg) {
 		if (msg.author.bot) return
 
 		if (msg.content.indexOf(process.env.BOT_PREFIX) !== -1) {
-			if (msg.channel.type == "DM") {
+			if (msg.channel.type == Discord.ChannelType.DM) {
 				msg.reply({ content: 'Please select an option which data you want to verify or update!', components: [this.components] }).catch(err => {
 					logger.error("Verification: Error replying to user %s (ID: %s): %O", msg.author.tag, msg.author.id, err)
 				})
@@ -187,15 +189,6 @@ class VerificationAction {
 	async handleMessageReactionRemove(messageReaction, user) {
 		if (user.bot) return
 
-		if (messageReaction.partial) {
-			try {
-				await messageReaction.fetch()
-			} catch (err) {
-				logger.error('Verification: Error fetching reaction: %O', err)
-				return
-			}
-		}
-
 		let { config } = API.getConfiguration()
 
 		if (messageReaction.message.channelId == config.verification_channel_id) {
@@ -218,7 +211,7 @@ class VerificationAction {
 	 * 
 	 * @param {Discord.GuildMember} member - member data
 	 */
-	handleGuildMemberAdd(member) {
+	async handleGuildMemberAdd(member) {
 		let { config } = API.getConfiguration()
 
 		member.roles.add(config.unverified_role_id).catch(err => {
@@ -233,21 +226,16 @@ class VerificationAction {
 	 * @param {Discord.User} user - user data
 	 */
 	async handleMessageReactionAdd(messageReaction, user) {
-		if (messageReaction.partial) {
-			try {
-				await messageReaction.fetch()
-			} catch (err) {
-				logger.error("Director Elevation: Error on fetching reaction: %O", err)
-				return
-			}
-		}
-		
 		let { config } = API.getConfiguration()
+
+		if (messageReaction.message.channelId != config.verification_channel_id && messageReaction.message.channelId != config.introduction_channel_id) {
+			return
+		}
 
 		this.client.guilds.fetch(process.env.BOT_GUILD_ID).then(guild => {
 			if (messageReaction.message.channelId == config.verification_channel_id) {
-				const embed = new Discord.MessageEmbed()
-				embed.addField(`Verification for ${guild.name}`, config.verification_dm_text)
+				const embed = new Discord.EmbedBuilder()
+				embed.addFields({ name: `Verification for ${guild.name}`, value: config.verification_dm_text })
 				user.send({ embeds: [embed] }).then(() => {
 					logger.info(`Verification message sent to ${user.tag}`)
 				}).catch(err => {

@@ -315,6 +315,7 @@ export default {
         {
           name: "__slot:valuation",
           title: "Valuation",
+          sortField: "valuation.value",
         },
         {
           name: "name",

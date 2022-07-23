@@ -5,14 +5,15 @@ const logger = require("../lib/logger")
 class DirectorElevationAction {
 	constructor(client) {
 		this.client = client
-		this.register()
 	}
 
     /**
      * Register event handlers
      */
 	register() {
-		this.client.on("messageReactionAdd", async (messageReaction, user) => this.handleReactionAdd(messageReaction, user))
+		return {
+			"messageReactionAdd": async (messageReaction, user) => await this.handleReactionAdd(messageReaction, user)
+		}
 	}
 
 	/**
@@ -22,18 +23,11 @@ class DirectorElevationAction {
      * @param {Discord.User} user - user data
 	 */
 	async handleReactionAdd(messageReaction, user) {
-		if (messageReaction.partial) {
-			try {
-				await messageReaction.fetch()
-			} catch (err) {
-				logger.error("Director Elevation: Error on fetching reaction: %O", err)
-				return
-			}
-		}
-	
 		if (user.bot) return
 
-		this.elevate(messageReaction, user)
+		if (messageReaction.message.channel.type !== Discord.ChannelType.DM) {
+			await this.elevate(messageReaction, user)
+		}
 	}
 
 	/**
@@ -55,11 +49,11 @@ class DirectorElevationAction {
 
 		messageReaction.message.react(config.elevation_emoji_id)
 
-		const message = await messageReaction.message.channel.messages.fetch(messageReaction.message.id)
-		const reactionCount = message.reactions.cache.get(messageReaction._emoji.id).count
-
 		/** Check if reacted emoji is tied to a treasury and if required amount for elevation is reached **/
 		if (messageReaction._emoji.id in treasuryElevations) {
+			const message = await messageReaction.message.channel.messages.fetch(messageReaction.message.id)
+			const reactionCount = message.reactions.cache.get(messageReaction._emoji.id).count
+
 			var elevationInfo = treasuryElevations[messageReaction._emoji.id]
 			if (reactionCount >= elevationInfo.amount) {
 				let emoji = await this.client.emojis.cache.get(messageReaction._emoji.id)
@@ -72,9 +66,9 @@ class DirectorElevationAction {
 					const elevatedMessage = response.data
 	
 					if (!elevatedMessage.newMessageId) {
-						const embed = new Discord.MessageEmbed()
+						const embed = new Discord.EmbedBuilder()
 							.setColor('#0099ff')
-							.setAuthor(`${messageReaction.message.author.username} in  #${messageReaction.message.channel.name}`)
+							.setAuthor({ name: `${messageReaction.message.author.username} in  #${messageReaction.message.channel.name}` })
 							.setURL(messageReaction.message.url)
 							.setTitle('Top ' + (isContent ? 'Content' : 'Story') + ' <:' + emoji.identifier + '>')
 							.setDescription(messageReaction.message.content)
