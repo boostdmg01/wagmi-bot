@@ -1,5 +1,6 @@
 const API = require("../lib/api")
 const logger = require("../lib/logger")
+const Discord = require("discord.js")
 
 class ValuationAction {
     constructor(client) {
@@ -111,11 +112,11 @@ class ValuationAction {
 ${messageReaction.message.url}`)
                                             logger.info(`Valuation: Message %s has been valuated with %f %s <:%s}> by %s`, messageReaction.message.id, treasuryValuations[messageReaction._emoji.id].value, treasuryValuations[messageReaction._emoji.id].coinName, emoji.identifier, reactor.user.username)
                                         }).catch(err => {
-                                            messageReaction.remove()
+                                            messageReaction.users.remove(user)
                                             logger.info("Valuation: Error on valuating messageReaction %O", messageReaction)
                                         })
                                     } else {
-                                        messageReaction.remove()
+                                        messageReaction.users.remove(user)
                                         user.send('Message has already been valuated with this emoji!').catch(err => {
                                             logger.error("Verification: Error replying to user %s (ID: %s): %O", user.tag, user.id, err)
                                         })
