@@ -209,7 +209,8 @@ export default {
       dataTableLoaded: false,
       treasuries: [],
       valuations: [],
-      totalValuations: 0
+      totalValuations: 0,
+      oldQuery: {}
     };
   },
   watch: {
