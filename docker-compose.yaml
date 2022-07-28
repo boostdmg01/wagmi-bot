@@ -81,5 +81,9 @@ services:
         volumes:
             - ./report/dist:/usr/share/nginx/html
             - ./report/log/nginx:/var/log/nginx
+            - ./report/conf/nginx/conf.d/default.conf:/etc/nginx/conf.d/default.conf
+            - ./report/conf/nginx/nginx.conf:/etc/nginx/nginx.conf
+            - ./report/conf/modsec:/etc/nginx/modsec
+            - ./report/conf/owasp/crs-setup.conf:/usr/local/owasp-modsecurity-crs/crs-setup.conf
         depends_on:
             - api

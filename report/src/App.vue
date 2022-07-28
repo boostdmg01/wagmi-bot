@@ -371,7 +371,10 @@ export default {
       return options;
     },
     getData() {
-      return API.request("/valuations/", this.makeQueryParams())
+      let params = this.makeQueryParams();
+      if (JSON.stringify(params) == JSON.stringify(this.oldQuery)) return
+      this.oldQuery = params
+      return API.request("/valuations/", params)
         .then((response) => {
           this.dataTableLoaded = true;
           this.valuations = response.data.data;

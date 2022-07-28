@@ -64,10 +64,6 @@ COPY --from=base /usr/local/modsecurity /usr/local/modsecurity
 COPY --from=base /usr/local/owasp-modsecurity-crs /usr/local/owasp-modsecurity-crs
 COPY --from=base /usr/lib/nginx/modules/ /usr/lib/nginx/modules/
 
-COPY conf/nginx/ /etc/nginx/
-COPY conf/modsec/ /etc/nginx/modsec/
-COPY conf/owasp/ /usr/local/owasp-modsecurity-crs/
-
 RUN apk add --no-cache \
     curl-dev \
     libmaxminddb-dev \

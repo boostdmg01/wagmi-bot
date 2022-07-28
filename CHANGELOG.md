@@ -1,5 +1,12 @@
 # CHANGELOG
 
+## 1.1.7
+### Changes
+Report: config files are now mounted and not copied into the container
+Report: Little adjustments to the config files
+### Bugfixes
+Report: API Request triggered twice when navigating
+
 ## 1.1.6
 ### Changes
 API/Bot: Container changed to node:current-alpine3.16
