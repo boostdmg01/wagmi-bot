@@ -46,10 +46,12 @@ app.use(nonAuth(session({
 	saveUninitialized: false,
 	name: 'wagmi_bot',
 	cookie: {
-		maxAge: 3 * 60 * 60 * 1000,
-		sameSite: true,
 		domain: cookieDomain,
+		httpOnly: true,
+		maxAge: 3 * 60 * 60 * 1000,
 		path: cookiePath
+		sameSite: true,
+		secure: true,
 	},
 })))
 
