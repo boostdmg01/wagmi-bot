@@ -38,7 +38,7 @@ const remapChannels = (data) => {
 const checkRateLimit = async headers => {
     let delayTime = 0
     if (parseInt(headers['x-ratelimit-remaining']) <= 0) {
-        delayTime = delay(parseInt(headers['x-ratelimit-reset-after']) * 1000)
+        delayTime = parseInt(headers['x-ratelimit-reset-after']) * 1000
     }
     
     await delay(delayTime)
