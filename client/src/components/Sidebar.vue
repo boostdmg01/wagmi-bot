@@ -25,7 +25,7 @@
   >
     <div
       class="
-        md:flex-col md:items-stretch md:min-h-full md:flex-nowrap
+        md:flex-col md:items-stretch md:flex-nowrap
         px-0
         flex flex-wrap
         items-center

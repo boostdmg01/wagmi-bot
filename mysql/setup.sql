@@ -65,6 +65,7 @@ CREATE TABLE `treasury` (
   `elevationAmount` int(3) NOT NULL DEFAULT 0,
   `type` varchar(20) DEFAULT NULL,
   `rpcUrl` varchar(255) DEFAULT NULL,
+  `explorerUrl` varchar(255) DEFAULT NULL,
   `chainPrefix` int(4) DEFAULT NULL,
   `mnemonic` text DEFAULT NULL,
   `privateKey` text DEFAULT NULL,
@@ -109,7 +110,9 @@ CREATE TABLE `valuation` (
   `minBalanceBumped` tinyint(1) NOT NULL DEFAULT 0,
   `sentExistentialDeposit` tinyint(1) NOT NULL DEFAULT 0,
   `royaltyMinBalanceBumped` tinyint(1) NOT NULL DEFAULT 0,
-  `royaltySentExistentialDeposit` tinyint(1) NOT NULL DEFAULT 0
+  `royaltySentExistentialDeposit` tinyint(1) NOT NULL DEFAULT 0,
+  `awarderId` VARCHAR(20) NULL DEFAULT NULL,
+  `awarderUsername` VARCHAR(255) NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE `existential_deposit` (
@@ -117,6 +120,15 @@ CREATE TABLE `existential_deposit` (
   `chainPrefix` int(4) NOT NULL,
   `transactionHash` varchar(255) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE `valuation_content` (
+  `messageId` varchar(20) NOT NULL,
+  `content` mediumtext NOT NULL,
+  `timestamp` int(12) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+ALTER TABLE `valuation_content`
+  ADD UNIQUE KEY `messageId` (`messageId`);
 
 ALTER TABLE `existential_deposit`
   ADD UNIQUE KEY `userId` (`userId`,`chainPrefix`);

@@ -70,7 +70,16 @@ class ValuationAction {
                                     messageLink: messageReaction.message.url,
                                     coinName: treasuryValuations[messageReaction._emoji.id].coinName,
                                     treasuryType: treasuryValuations[messageReaction._emoji.id].treasuryType,
-                                    source: source
+                                    source: source,
+                                    content: messageReaction.message.content,
+                                    awarderId: reactor.user.id,
+                                    awarderUsername: reactor.user.username
+                                }
+
+                                if (insertValuationData.content === null || insertValuationData.content === '') {
+                                    if (messageReaction.message.embeds.length > 0) {
+                                        insertValuationData.content = messageReaction.message.embeds[0].data.description
+                                    }
                                 }
 
                                 /** If the current message is an elevated one, update data for the valuation based on the old message **/

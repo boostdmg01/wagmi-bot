@@ -37,35 +37,23 @@
             mt-6
           "
         >
-          <vuetable
-            ref="vuetable"
-            :api-url="apiUrl"
-            :fields="fields"
-            data-path="data"
-            pagination-path=""
-            :css="css.table"
-            :sort-order="sortOrder"
-            :per-page="20"
-            :query-params="makeQueryParams"
-            @vuetable:load-error="onLoadFailed"
-            @vuetable:pagination-data="onPaginationData"
-            @vuetable:loading="onLoading"
-            @vuetable:loaded="onLoaded"
-          >
-            <template slot="emoji" slot-scope="{ rowData }">
-              <div>
+
+        <v-data-table :headers="headers" :items="emojis" :page.sync="page" :options.sync="options"
+            :server-items-length="totalItems" :loading="this.$root.isLoading" :mobile-breakpoint="0"
+            hide-default-footer :items-per-page="10"
+            :sort-by.sync="options.sortBy" :sort-desc.sync="options.sortDesc" class="elevation-1"
+            @page-count="pageCount = $event">
+            <template v-slot:item.emojiId="{ item }">
                 <img
-                  :src="getDiscordEmojiUrl(rowData.emojiId)"
+                  :src="getDiscordEmojiUrl(item.emojiId)"
                   class="emoji"
                   alt=""
                   title=""
                 />
-              </div>
             </template>
-            <template slot="table-actions" slot-scope="{ rowData }">
-              <div>
-                <router-link
-                  :to="`/admin/emojis/update/${rowData.id}`"
+            <template v-slot:item.actions="{ item }">
+              <router-link
+                  :to="`/admin/emojis/update/${item.id}`"
                   class="
                     inline-block
                     whitespace-nowrap
@@ -86,7 +74,7 @@
                   ><i class="fas fa-pencil"></i> Edit</router-link
                 >
                 <button
-                  @click="deleteEmoji(rowData)"
+                  @click="deleteEmoji(item)"
                   class="
                     inline-block
                     whitespace-nowrap
@@ -106,19 +94,16 @@
                 >
                   <i class="fas fa-trash"></i> Delete
                 </button>
-              </div>
             </template>
-          </vuetable>
-          <div class="w-full flex items-center mt-6 px-6">
-            <vuetable-pagination-info
-              :css="css.paginationInfo"
-              ref="paginationInfo"
-            ></vuetable-pagination-info>
-            <vuetable-pagination
-              ref="pagination"
-              :css="css.pagination"
-              @vuetable-pagination:change-page="onChangePage"
-            ></vuetable-pagination>
+          </v-data-table>
+
+          <div class="flex flex-wrap w-full items-center mt-6">
+            <div class="w-1/4 pr-4 text-sm whitespace-nowrap">{{ totalItems == 1 ? totalItems + ' Emoji' :
+                totalItems + ' Emojis'
+            }}</div>
+            <div class="w-3/4 flex justify-end">
+              <v-pagination v-model="page" :length="pageCount" :totalVisible="10"></v-pagination>
+            </div>
           </div>
         </div>
       </div>
@@ -129,109 +114,110 @@
 </template>
 <script>
 import API from "@/services/api";
-import Vuetable from "vuetable-2/src/components/Vuetable";
-import VuetablePagination from "vuetable-2/src/components/VuetablePagination";
-import VuetablePaginationInfo from "vuetable-2/src/components/VuetablePaginationInfo";
 import ConfirmDialogue from "@/components/Confirmation";
 
 export default {
-  name: "EmojiOverview",
+  name: "TreasuryOverview",
   components: {
-    Vuetable,
-    VuetablePagination,
-    VuetablePaginationInfo,
-    ConfirmDialogue,
+    ConfirmDialogue
+  },
+  mounted() {
+    this.$watch(
+      (vm) => [vm.tableLoaded],
+      () => {
+        if (this.tableLoaded) {
+          this.$root.isLoading = false;
+        } else {
+          this.$root.isLoading = true;
+        }
+      },
+      {
+        immediate: true,
+        deep: true,
+      }
+    );
+
+    this.getData()
+  },
+  watch: {
+    searchFilter: {
+      handler() {
+        this.page = 1
+        this.getData()
+      },
+      deep: true,
+    },
+
+    options: {
+      handler() {
+        this.getData();
+      },
+      deep: true,
+    },
   },
   data() {
     return {
-      apiUrl: process.env.VUE_APP_API_URL + "emoji/all",
-      fields: [
+      searchFilter: "",
+      options: {
+        sortBy: ['name'],
+        sortDesc: [false]
+      },
+      page: 1,
+      pageCount: 0,
+      tableLoaded: false,
+      emojis: [],
+      headers: [
         {
-          name: "__slot:emoji",
-          title: "Emoji",
+          value: "emojiId",
+          text: "Emoji",
+          sortable: false,
+          align: "start",
         },
         {
-          name: "amount",
-          title: "Value",
-          sortField: "emoji.amount",
+          value: "amount",
+          text: "Amount",
+          sortField: "amount",
+          sortable: true,
+          align: "start",
         },
         {
-          name: "name",
-          title: "Treasury",
-          sortField: "treasury.name",
+          value: "name",
+          text: "Name",
+          sortField: "name",
+          sortable: true,
+          align: "start",
         },
         {
-          name: "__slot:table-actions",
-          title: "Actions",
+          value: "actions",
+          text: "Actions",
           width: "16%",
+          sortable: false,
+          align: "start",
         },
       ],
-      sortOrder: [{ field: "name", direction: "asc" }],
-      css: {
-        table: {
-          tableWrapper: "w-full",
-          tableHeaderClass: "mb-0",
-          tableBodyClass: "mb-0",
-          tableClass: "w-full",
-          loadingClass: "loading",
-          ascendingIcon: "fa fa-chevron-up",
-          descendingIcon: "fa fa-chevron-down",
-          ascendingClass: "sorted-asc",
-          descendingClass: "sorted-desc",
-          sortableIcon: "fa fa-sort",
-          detailRowClass: "vuetable-detail-row",
-          handleIcon: "fa fa-bars text-secondary",
-          renderIcon(classes) {
-            return `<i class="${classes.join(" ")}"></span>`;
-          },
-        },
-        pagination: {
-          wrapperClass: "pagination ml-auto",
-          activeClass: "active",
-          disabledClass: "disabled",
-          pageClass: "page-item",
-          linkClass: "page-link",
-          paginationClass: "pagination",
-          paginationInfoClass: "float-left",
-          dropdownClass: "form-control",
-          icons: {
-            first: "fa fa-backward-fast",
-            prev: "fa fa-chevron-left",
-            next: "fa fa-chevron-right",
-            last: "fa fa-forward-fast",
-          },
-        },
-        paginationInfo: {
-          infoClass: "text-sm",
-        },
-      },
+      oldQuery: {}
     };
+  },
+  computed: {
+    totalItems: function() {
+      return this.emojis.length
+    }
   },
   methods: {
     getDiscordEmojiUrl(id) {
       return `https://cdn.discordapp.com/emojis/${id}.webp?size=64&quality=lossless`;
     },
-    onPaginationData(paginationData) {
-      this.$refs.pagination.setPaginationData(paginationData);
-      this.$refs.paginationInfo.setPaginationData(paginationData);
-    },
-    onChangePage(page) {
-      this.$refs.vuetable.changePage(page);
-    },
-    editRow(rowData) {
-      alert("You clicked edit on" + JSON.stringify(rowData));
-    },
     async deleteEmoji(rowData) {
       const ok = await this.$refs.confirmDialogue.show({
         title: "Delete Emoji",
-        message: `Are you sure you want to delete ${rowData.name} as an emoji? It cannot be undone.`,
+        message: `Are you sure you want to delete ${rowData.name} as a treasury? It cannot be undone.`,
         okButton: "Delete Forever",
       });
       
       if (ok) {
         API.request(`emoji/delete/${rowData.id}`, null, "DELETE")
           .then((res) => {
-            this.$refs.vuetable.refresh();
+            this.emojis = this.emojis.filter(e => e.id != rowData.id)
             this.$notify({ type: "success", text: res.data.message });
           })
           .catch((error) => {
@@ -239,26 +225,51 @@ export default {
           });
       }
     },
-    onLoadFailed(data) {
-      if (data.response.status === 400) {
-        this.$router.push({ path: "/admin/login" });
-      }
-    },
-    onLoading() {
-      this.$root.isLoading = true;
-    },
-    onLoaded() {
-      this.$root.isLoading = false;
-    },
-    makeQueryParams(sortOrder, currentPage, perPage) {
-      return {
+    makeQueryParams() {
+      let options = {
         paginated: true,
-        sortField: sortOrder[0].sortField,
-        sortOrder: sortOrder[0].direction,
-        pageNo: currentPage,
-        pageSize: perPage,
       };
+
+      options.searchFilter = this.searchFilter;
+      if (this.options.sortBy) {
+        if (this.options.sortBy.length === 0) {
+          options.sortField = "name";
+        } else {
+          options.sortField = this.headers.filter((e) => e.value === this.options.sortBy[0])[0].sortField || this.options.sortBy[0];
+        }
+      } else {
+        options.sortField = "name";
+      }
+
+      if (!this.options.sortDesc || this.options.sortDesc.length === 0) {
+        options.sortOrder = "DESC";
+      } else {
+        options.sortOrder = this.options.sortDesc[0] ? "DESC" : "ASC";
+      }
+
+      options.pageSize = 10;
+      options.pageNo = this.page;
+
+      return options;
     },
+    getData() {
+      let params = this.makeQueryParams();
+      if (JSON.stringify(params) == JSON.stringify(this.oldQuery)) return
+      this.oldQuery = params
+      return API.request("/emoji/all", params)
+        .then((response) => {
+          this.tableLoaded = true;
+          this.emojis = response.data.data;
+          this.totalItems = response.data.total;
+          this.pageCount = response.data.last_page;
+
+          return response;
+        })
+        .catch((e) => {
+          this.tableLoaded = false;
+          console.log(e);
+        });
+    }
   },
 };
 </script>

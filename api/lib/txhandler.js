@@ -365,7 +365,7 @@ class TransactionHandler {
             /** Treasury setting, send existential deposit to receiver **/
             if (data.sendExistentialDeposit === 1) {
                 /** Check if this user has already received existential deposit for this substrate chain **/
-                let [existentialDeposits] = await sql.query(`SELECT * FROM existential_deposit WHERE userId = ? AND chainPrefix = ? LIMIT 1`, [data.c])
+                let [existentialDeposits] = await sql.query(`SELECT * FROM existential_deposit WHERE userId = ? AND chainPrefix = ? LIMIT 1`, [data.userId, data.chainPrefix])
 
                 if (existentialDeposits.length == 0) {
                     /** Get existential deposit constant **/

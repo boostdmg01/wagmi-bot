@@ -2,6 +2,7 @@ const Valuation = require("../model/valuation.js")
 const User = require("../model/user.js")
 const logger = require("../lib/logger")
 const Validation = require("../lib/validation")
+const csvWriter = require("csv-writer")
 
 /**
  * Insert message valuation
@@ -130,7 +131,7 @@ exports.getAll = async (req, res) => {
 		options.pageSize = parseInt(req.query.pageSize)
 		options.pageNo = parseInt(req.query.pageNo)
 
-		let validSortFields = ['valuation.timestamp', 'valuation.source', 'valuation.status', 'valuation.username', 'treasury.name', 'valuation.value']
+		let validSortFields = ['valuation.timestamp', 'valuation.source', 'valuation.status', 'valuation.username', 'treasury.name', 'valuation.value', 'valuation.awarderUsername']
 		if (!validSortFields.includes(options.sortField)) {
 			errors.push({
 				key: 'sortField',
@@ -138,7 +139,7 @@ exports.getAll = async (req, res) => {
 			})
 		}
 
-		if (options.sortOrder !== "asc" && options.sortOrder !== "desc") {
+		if (options.sortOrder !== "ASC" && options.sortOrder !== "DESC") {
 			errors.push({
 				key: 'sortOrder',
 				message: 'Not a valid sort order'
@@ -279,7 +280,7 @@ exports.getAllPublic = async (req, res) => {
 		options.pageSize = parseInt(req.query.pageSize)
 		options.pageNo = parseInt(req.query.pageNo)
 
-		let validSortFields = ['valuation.timestamp', 'valuation.source', 'valuation.status', 'treasury.name', 'valuation.value']
+		let validSortFields = ['valuation.timestamp', 'valuation.source', 'valuation.status', 'treasury.name', 'valuation.value', 'valuation.awarderUsername']
 		if (!validSortFields.includes(options.sortField)) {
 			errors.push({
 				key: 'sortField',
@@ -325,6 +326,127 @@ exports.getAllPublic = async (req, res) => {
 		logger.error("Error on retrieving valuations (public): %O", err)
 		res.status(500).send({
 			message: "Error on retrieving valuations (public)"
+		})
+	}
+}
+
+/**
+ * Query all message valuations and return a blob
+ * 
+ * @param {*} req - Request
+ * @param {*} res - Response
+ */
+ exports.export = async (req, res) => {
+	let options = {}
+
+	let errors = []
+
+	if (req.query.searchFilter) {
+		try {
+			options.searchFilter = JSON.parse(req.query.searchFilter)
+
+			if (options.searchFilter.dateStart && !Validation.isNumber(options.searchFilter.dateStart)) {
+				errors.push({
+					key: 'searchFilter.dateStart',
+					message: 'Not a number'
+				})
+			}
+	
+			if (options.searchFilter.dateEnd && !Validation.isNumber(options.searchFilter.dateEnd)) {
+				errors.push({
+					key: 'searchFilter.dateEnd',
+					message: 'Not a number'
+				})
+			}
+	
+			if (options.searchFilter.treasuryId && !Validation.isNumber(options.searchFilter.treasuryId)) {
+				errors.push({
+					key: 'searchFilter.treasuryId',
+					message: 'Not a number'
+				})
+			}
+	
+			if (options.searchFilter.status && (options.searchFilter.status < 1 || options.searchFilter.status > 3)) {
+				errors.push({
+					key: 'searchFilter.status',
+					message: 'Not a valid status filter'
+				})
+			}
+		} catch(e) {
+			errors.push({
+				key: 'searchFilter',
+				message: 'Invalid JSON'
+			})
+		}
+	}
+
+	options.sortField = req.query.sortField
+	options.sortOrder = req.query.sortOrder
+	options.export = true
+
+	let validSortFields = ['valuation.timestamp', 'valuation.source', 'valuation.status', 'valuation.username', 'treasury.name', 'valuation.value', 'valuation.awarderUsername']
+	if (!validSortFields.includes(options.sortField)) {
+		errors.push({
+			key: 'sortField',
+			message: 'Not a valid sort field'
+		})
+	}
+
+	if (options.sortOrder !== "ASC" && options.sortOrder !== "DESC") {
+		errors.push({
+			key: 'sortOrder',
+			message: 'Not a valid sort order'
+		})
+	}
+
+	if (errors.length) {
+		res.status(422).send({
+			message: 'Validation failed',
+			errors
+		})
+		return
+	}
+
+	try {
+		logger.debug("Getting all valuations - export: %O", options)
+		let result = await Valuation.getAll(options)
+		result.map(e => {
+			if (e.timestamp) {
+				e.timestamp = (new Date(e.timestamp * 1000)).toLocaleString("en-US", { timeZone: "UTC", hour12: false })
+			}
+			
+			if (e.transactionTimestamp) {
+				e.transactionTimestamp = (new Date(e.transactionTimestamp * 1000)).toLocaleString("en-US", { timeZone: "UTC", hour12: false })
+			}
+			
+			if (e.royaltyTransactionTimestamp) {
+				e.royaltyTransactionTimestamp = (new Date(e.royaltyTransactionTimestamp * 1000)).toLocaleString("en-US", { timeZone: "UTC", hour12: false })
+			}
+
+			if (e.explorerUrl && e.explorerUrl !== "") {
+				if (e.transactionHash) {
+					e.transactionHash = e.explorerUrl.replace('%s', e.transactionHash)
+				}
+
+				if (e.royaltyTransactionHash) {
+					e.royaltyTransactionHash = e.explorerUrl.replace('%s', e.royaltyTransactionHash)
+				}
+			}
+
+			delete e.explorerUrl
+
+			return e;
+		})
+
+		const csvStringifier = csvWriter.createObjectCsvStringifier({
+			header: Object.keys(result[0]).map(e => { return { id: e, title: e }})
+		});
+	
+		res.send(csvStringifier.getHeaderString() + csvStringifier.stringifyRecords(result))
+	} catch (err) {
+		logger.error(`Error on retrieving valuations - export: %O`, err)
+		res.status(500).send({
+			message: "Error on retrieving valuations on export"
 		})
 	}
 }

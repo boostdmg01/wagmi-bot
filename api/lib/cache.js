@@ -2,9 +2,9 @@ const fs = require("fs")
 
 const cacheDirectory = process.cwd() + '/cache/'
 
-exports.read = (file) => {
+exports.read = (file, cachingTime = 30 * 60 * 1000) => {
 	let filePath = cacheDirectory + file + '.json'
-	if (fs.existsSync(filePath) && (fs.statSync(filePath).mtimeMs + 30 * 60 * 1000 > Date.now())) {
+	if (fs.existsSync(filePath) && (fs.statSync(filePath).mtimeMs + cachingTime > Date.now())) {
 		return JSON.parse(fs.readFileSync(filePath))
 	}
 

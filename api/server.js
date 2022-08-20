@@ -5,6 +5,7 @@ const cors = require("cors")
 const session = require("express-session")
 const twofactor = require("node-2fa")
 const Validation = require("./lib/validation")
+const Valuation = require("./model/valuation")
 const Treasury = require("./model/treasury")
 const compare = require("secure-compare")
 
@@ -118,3 +119,5 @@ io.on("connection", socket => {
 		}
 	})
 })
+
+setInterval(Valuation.pruneContent, 24 * 60 * 60 * 1000)

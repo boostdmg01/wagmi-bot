@@ -50,6 +50,7 @@ module.exports = (app) => {
 	const valuation = require("./controller/valuation.js")
 	router.post("/api/valuation/insert", valuation.insert)
 	router.get("/api/valuation/all", valuation.getAll)
+	router.get("/api/valuation/export", valuation.export)
 	router.get("/api/valuation/public", valuation.getAllPublic)
 	router.post("/api/valuation/findOne", valuation.findOne)
 	router.delete("/api/valuation/delete/:id", valuation.delete)

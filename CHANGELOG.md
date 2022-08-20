@@ -1,25 +1,35 @@
 # CHANGELOG
 
+## 1.1.8
+### Changes
+* API/Bot: Added content tracking that will be pruned after 30 days
+* API/Bot/Client/Report: Added director tracking for valuations
+* API/Client: Replaced some data tables with vuetify component
+* API/Client: Added export for valuated messages
+* API/Client/Report: Added explorerUrl to treasuries for generating transaction urls
+* API: Cache expiration timeframe can be set individually, upped timeframe for user data
+* API: Enhanced Discord Rate Limit Checker
+
 ## 1.1.7
 ### Changes
-Report: config files are now mounted and not copied into the container
-Report: Little adjustments to the config files
+* Report: config files are now mounted and not copied into the container
+* Report: Little adjustments to the config files
 ### Bugfixes
-Report: API Request triggered twice when navigating
+* Report: API Request triggered twice when navigating
 
 ## 1.1.6
 ### Changes
-API/Bot: Container changed to node:current-alpine3.16
-API: Added valuation value as valid sort field
-Bot: Refactored action handlers to prevent race conditions
-Client/Report: Sorting by valuation value now possible
-Client/Report: Added X-Frame-Options Header to nginx configuration
-Client/Report: Added server_tokens off in in nginx configuration
-Client/Report: Disabled js source map files
-Report: Refactored nginx-alpine image 1.23 including modsecurity
+* API/Bot: Container changed to node:current-alpine3.16
+* API: Added valuation value as valid sort field
+* Bot: Refactored action handlers to prevent race conditions
+* Client/Report: Sorting by valuation value now possible
+* Client/Report: Added X-Frame-Options Header to nginx configuration
+* Client/Report: Added server_tokens off in in nginx configuration
+* Client/Report: Disabled js source map files
+* Report: Refactored nginx-alpine image 1.23 including modsecurity
 
 ### Bugfixes
-API: Fixed validation logic for status sort field in data table controller methods
+* API: Fixed validation logic for status sort field in data table controller methods
 
 ## 1.1.5
 ### Changes

@@ -16,11 +16,7 @@
     </div>
     <div>
       <span class="font-semibold">Transaction Hash:</span>
-      {{
-        rowData.transactionHash !== "" && rowData.transactionHash !== null
-          ? rowData.transactionHash
-          : "-"
-      }}
+      <span v-html="transactionHash" />
     </div>
     <div v-if="rowData.royaltyValue > 0">
       <div>
@@ -38,12 +34,7 @@
       </div>
       <div>
         <span class="font-semibold">Royalty Transaction Hash:</span>
-        {{
-          rowData.royaltyTransactionHash !== "" &&
-          rowData.royaltyTransactionHash !== null
-            ? rowData.royaltyTransactionHash
-            : "-"
-        }}
+        <span v-html="royaltyTransactionHash" />
       </div>
     </div>
     <div v-if="rowData.hasAsset === 1">
@@ -85,5 +76,31 @@ export default {
       type: Number,
     },
   },
+  computed: {
+    transactionHash: function() {
+      if (this.rowData.transactionHash !== "" && this.rowData.transactionHash !== null) {
+        if (this.rowData.explorerUrl !== "" && this.rowData.explorerUrl !== null) {
+          const url = this.rowData.explorerUrl.replace('%s', this.rowData.transactionHash)
+          return `<a href="${url}">${this.rowData.transactionHash}</a>`
+        } else {
+          return this.rowData.transactionHash
+        }
+      }
+
+      return '-';
+    },
+    royaltyTransactionHash: function() {
+      if (this.rowData.royaltyTransactionHash !== "" && this.rowData.royaltyTransactionHash !== null) {
+        if (this.rowData.explorerUrl !== "" && this.rowData.explorerUrl !== null) {
+          const url = this.rowData.explorerUrl.replace('%s', this.rowData.royaltyTransactionHash)
+          return `<a href="${url}">${this.rowData.royaltyTransactionHash}</a>`
+        } else {
+          return this.rowData.royaltyTransactionHash
+        }
+      }
+
+      return '-';
+    }
+  }
 };
 </script>

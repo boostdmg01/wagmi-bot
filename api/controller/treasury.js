@@ -275,6 +275,13 @@ checkTreasuryValidation = (treasury, isUpdate = false) => {
 		})
 	}
 
+	if (!Validation.isUrl(treasury.explorerUrl)) {
+		errors.push({
+			key: 'explorerUrl',
+			message: 'Not a valid Explorer URL'
+		})
+	}
+
 	if (treasury.type === "substrate") {
 		if (!Validation.isNumber(treasury.chainPrefix)) {
 			errors.push({

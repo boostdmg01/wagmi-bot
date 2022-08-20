@@ -2,6 +2,8 @@ const axios = require("axios")
 const cache = require("../lib/cache")
 const logger = require("../lib/logger")
 
+const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
+
 /**
  * Remap Discord channels to a more readable format including parent channels
  * 
@@ -31,6 +33,15 @@ const remapChannels = (data) => {
 	}
 
 	return remapped
+}
+
+const checkRateLimit = async headers => {
+    let delayTime = 0
+    if (parseInt(headers['x-ratelimit-remaining']) <= 0) {
+        delayTime = delay(parseInt(headers['x-ratelimit-reset-after']) * 1000)
+    }
+    
+    await delay(delayTime)
 }
 
 /**
@@ -125,9 +136,7 @@ exports.getRoles = async (req, res) => {
  * @param {*} res - Response
  */
 exports.getMembers = async (req, res) => {
-	const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
-
-	let cachedMembers = cache.read('members')
+	let cachedMembers = cache.read('members', 3 * 24 * 60 * 60 * 1000)
 	if (cachedMembers) {
 		logger.debug("Getting Discord members from cache")
 		res.status(200).send(cachedMembers)
@@ -155,7 +164,7 @@ exports.getMembers = async (req, res) => {
 					users[user.user.id] = user.user.username
 				}
 
-				await delay(1000)
+				await checkRateLimit(response.headers)
 			} while (currentData.length)
 
 			cache.write('members', users)

@@ -198,6 +198,13 @@ export default {
           align: "start",
         },
         {
+          text: "Awarded by",
+          value: "awarderUsername",
+          sortField: "valuation.awarderUsername",
+          sortable: true,
+          align: "start",
+        },
+        {
           text: "Status",
           value: "status",
           sortField: "valuation.status",

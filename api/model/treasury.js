@@ -16,6 +16,7 @@ const Treasury = function (treasury = {}) {
 	this.elevationAmount = treasury.elevationAmount || 0
 	this.type = treasury.type || null
 	this.rpcUrl = treasury.rpcUrl || null
+	this.explorerUrl = treasury.explorerUrl || null
 	this.chainPrefix = treasury.chainPrefix || null
 	this.isNative = treasury.isNative || 0
 	this.tokenAddress = treasury.tokenAddress || null
@@ -48,7 +49,7 @@ Treasury.insert = async (treasury) => {
 			treasury.mnemonic = crypto.encrypt(treasury.mnemonic, treasury.encryptionKey)
 		}
 
-		await sql.execute("INSERT INTO treasury (name, elevationActive, elevationChannelId, elevationEmojiId, elevationAmount, type, rpcUrl, chainPrefix, mnemonic, chainOptions, privateKey, isNative, tokenAddress, tokenDecimals, coinName, royaltyAddress, royaltyEnabled, royaltyPercentage, assetId, sendMinBalance, sendExistentialDeposit, parachainType) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", [
+		await sql.execute("INSERT INTO treasury (name, elevationActive, elevationChannelId, elevationEmojiId, elevationAmount, type, rpcUrl, explorerUrl, chainPrefix, mnemonic, chainOptions, privateKey, isNative, tokenAddress, tokenDecimals, coinName, royaltyAddress, royaltyEnabled, royaltyPercentage, assetId, sendMinBalance, sendExistentialDeposit, parachainType) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", [
 			treasury.name,
 			treasury.elevationActive,
 			treasury.elevationChannelId,
@@ -56,6 +57,7 @@ Treasury.insert = async (treasury) => {
 			treasury.elevationAmount,
 			treasury.type,
 			treasury.rpcUrl,
+			treasury.explorerUrl,
 			treasury.chainPrefix,
 			treasury.mnemonic,
 			treasury.chainOptions,
@@ -96,6 +98,7 @@ Treasury.update = async (id, treasury) => {
 			'elevationAmount',
 			'type',
 			'rpcUrl',
+			'explorerUrl',
 			'chainPrefix',
 			'chainOptions',
 			'isNative',

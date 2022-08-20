@@ -9,11 +9,17 @@ const API = function () {
 
     this.request = async (endpoint, data = {}, method = 'GET') => {
         try {
-            return await this.client({
+            let options = {
                 url: endpoint,
-                method: method,
-                data: data
-            })
+                method: method
+            }
+
+            if (method === 'GET') {
+                options.params = data
+            } else {
+                options.data = data
+            }
+            return await this.client(options)
         } catch (error) {
             return this.onError(error)
         }

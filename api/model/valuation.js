@@ -6,19 +6,19 @@ const sql = require("../lib/sql.js")
  * @param {object} valuation - valuation data
  */
 const Valuation = function (valuation = {}) {
-	this.id = valuation.id || null,
-	this.messageId = valuation.messageId || null,
-	this.discordEmojiId = valuation.discordEmojiId || null,
-	this.treasuryId = valuation.treasuryId || null,
-	this.userId = valuation.userId || null,
-	this.username = valuation.username || null,
-	this.timestamp = valuation.timestamp || null,
-	this.value = valuation.value || null,
+	this.id = valuation.id || null
+	this.messageId = valuation.messageId || null
+	this.discordEmojiId = valuation.discordEmojiId || null
+	this.treasuryId = valuation.treasuryId || null
+	this.userId = valuation.userId || null
+	this.username = valuation.username || null
+	this.timestamp = valuation.timestamp || null
+	this.value = valuation.value || null
 	this.messageLink = valuation.messageLink || null
 	this.transactionHash = valuation.transactionHash || null
-	this.status = valuation.status || 1,
-	this.transactionTimestamp = valuation.transactionTimestamp || null,
-	this.royaltyValue = valuation.royaltyValue || null,
+	this.status = valuation.status || 1
+	this.transactionTimestamp = valuation.transactionTimestamp || null
+	this.royaltyValue = valuation.royaltyValue || null
 	this.royaltyTransactionHash = valuation.royaltyTransactionHash || null
 	this.royaltyTransactionTimestamp = valuation.royaltyTransactionTimestamp || null
 	this.royaltyStatus = valuation.royaltyStatus || 1
@@ -27,6 +27,9 @@ const Valuation = function (valuation = {}) {
 	this.sentExistentialDeposit = valuation.sentExistentialDeposit || 0
 	this.royaltyMinBalanceBumped = valuation.royaltyMinBalanceBumped || 0
 	this.royaltySentExistentialDeposit = valuation.royaltySentExistentialDeposit || 0
+	this.content = valuation.content || null
+	this.awarderId = valuation.awarderId || null
+	this.awarderUsername = valuation.awarderUsername || null
 }
 
 /**
@@ -37,7 +40,7 @@ const Valuation = function (valuation = {}) {
  */
 Valuation.insert = async (valuation) => {
 	try {
-		await sql.execute("INSERT INTO valuation (messageId, discordEmojiId, treasuryId, userId, username, timestamp, value, messageLink, status, royaltyValue, source) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", [
+		await sql.execute("INSERT INTO valuation (messageId, discordEmojiId, treasuryId, userId, username, timestamp, value, messageLink, status, royaltyValue, source, awarderId, awarderUsername) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", [
 			valuation.messageId,
 			valuation.discordEmojiId,
 			valuation.treasuryId,
@@ -48,8 +51,21 @@ Valuation.insert = async (valuation) => {
 			valuation.messageLink,
 			valuation.status,
 			valuation.royaltyValue,
-			valuation.source
+			valuation.source,
+			valuation.awarderId,
+			valuation.awarderUsername
 		])
+
+		/** Check if content already tracked, insert otherwise **/
+		let [rows] = await sql.query(`SELECT messageId FROM valuation_content WHERE messageId = ? LIMIT 1`, [valuation.messageId])
+
+		if (rows.length == 0) {
+			await sql.execute("INSERT INTO valuation_content (messageId, content, timestamp) VALUES (?, ?, ?)", [
+				valuation.messageId,
+				valuation.content,
+				valuation.timestamp
+			])
+		}
 
 		return { status: 200, message: "Valuation inserted" }
 	} catch (err) {
@@ -71,7 +87,6 @@ Valuation.findOne = async (options) => {
 		where.push(`${key} = ?`)
 		values.push(options[key])
 	}
-
 
 	try {
 		let [rows] = await sql.query(`SELECT * FROM valuation WHERE ${where.join(' AND ')} LIMIT 1`, values)
@@ -96,6 +111,7 @@ Valuation.getAll = async (options) => {
 	let defaults = {
 		searchFilter: null,
 		paginated: false,
+		export: false,
 		sortField: 'valuation.timestamp',
 		sortOrder: 'DESC',
 		pageNo: 1,
@@ -139,7 +155,12 @@ Valuation.getAll = async (options) => {
 	}
 
 	try {
-		let [rows] = await sql.query(`SELECT valuation.*, treasury.coinName, treasury.name, IF(treasury.type = 'substrate', IF(treasury.parachainType > 0, 1, 0), 0) AS hasAsset FROM valuation LEFT JOIN treasury ON (treasury.id = valuation.treasuryId) WHERE ${(() => where.join(' AND '))()} ORDER BY ${_options.sortField} ${_options.sortOrder} ${limit}`, bindings)
+		let selection = `valuation.*, treasury.coinName, treasury.name, IF(treasury.type = 'substrate', IF(treasury.parachainType > 0, 1, 0), 0) AS hasAsset, treasury.explorerUrl`
+		if (_options.export) {
+			selection = `valuation.*, treasury.coinName, treasury.name, valuation_content.content, treasury.explorerUrl`
+		}
+
+		let [rows] = await sql.query(`SELECT ${selection} FROM valuation LEFT JOIN treasury ON (treasury.id = valuation.treasuryId) LEFT JOIN valuation_content ON (valuation.messageId = valuation_content.messageId) WHERE ${(() => where.join(' AND '))()} ORDER BY ${_options.sortField} ${_options.sortOrder} ${limit}`, bindings)
 
 		if (!_options.paginated) {
 			return rows
@@ -219,7 +240,7 @@ Valuation.getAllPublic = async (options) => {
 	}
 
 	try {
-		let [rows] = await sql.query(`SELECT valuation.id, valuation.value, valuation.status, valuation.messageLink, valuation.timestamp, valuation.source, treasury.coinName, treasury.name, IF(treasury.type = 'substrate', IF(treasury.parachainType > 0, 1, 0), 0) AS hasAsset FROM valuation LEFT JOIN treasury ON (treasury.id = valuation.treasuryId) WHERE ${(() => where.join(' AND '))()} ORDER BY ${_options.sortField} ${_options.sortOrder} ${limit}`, bindings)
+		let [rows] = await sql.query(`SELECT valuation.id, valuation.value, valuation.status, valuation.messageLink, valuation.awarderUsername, valuation.transactionHash, valuation.timestamp, valuation.source, treasury.coinName, treasury.name, IF(treasury.type = 'substrate', IF(treasury.parachainType > 0, 1, 0), 0) AS hasAsset, treasury.explorerUrl FROM valuation LEFT JOIN treasury ON (treasury.id = valuation.treasuryId) WHERE ${(() => where.join(' AND '))()} ORDER BY ${_options.sortField} ${_options.sortOrder} ${limit}`, bindings)
 
 		if (!_options.paginated) {
 			return rows
@@ -254,9 +275,30 @@ Valuation.getAllPublic = async (options) => {
  */
  Valuation.delete = async (id) => {
 	try {
+		let [valuation] = await sql.query(`SELECT messageId FROM valuation WHERE id = ? LIMIT 1`, [id])
+
 		await sql.execute("DELETE FROM valuation WHERE id = ?", [id])
 
+		let [contentRows] = await sql.query(`SELECT id FROM valuation WHERE messageId = ?`, [valuation[0].messageId])
+
+		if (contentRows.length == 0) {
+			await sql.execute("DELETE FROM valuation_content WHERE messageId = ?", [valuation[0].messageId])
+		}
+
 		return { status: 200, message: "Valuation deleted" }
+	} catch (err) {
+		throw err
+	}
+}
+
+/**
+ * Prune valuation content
+ */
+ Valuation.pruneContent = async () => {
+	try {
+		const timestamp = Math.floor(Date.now() / 1000) - (30 * 24 * 60 * 60)
+
+		await sql.execute("DELETE FROM valuation_content WHERE timestamp > ?", [timestamp])
 	} catch (err) {
 		throw err
 	}

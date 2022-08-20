@@ -145,6 +145,10 @@
             <FormLabel for="rpcUrl">RPC URL</FormLabel>
             <FormInput v-model="treasury.rpcUrl" :errors="getErrors('rpcUrl')" id="rpcUrl" />
           </div>
+          <div class="mt-6">
+            <FormLabel for="rpcUrl">Explorer URL</FormLabel>
+            <FormInput v-model="treasury.explorerUrl" :errors="getErrors('explorerUrl')" id="explorerUrl" />
+          </div>
           <div v-if="type === 'evm'">
             <div class="mt-6">
               <FormLabel for="isNative">Token Type</FormLabel>
@@ -361,6 +365,7 @@ export default {
         elevationAmount: 1,
         type: null,
         rpcUrl: "",
+        explorerUrl: "",
         chainPrefix: 10,
         mnemonic: "",
         privateKey: "",
