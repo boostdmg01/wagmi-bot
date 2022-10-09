@@ -1,9 +1,10 @@
 # CHANGELOG
 
+## 1.2.0.1 Hotfix
+### Bugfixes
+* API: Misplaced routing options
+* API: Transaction Handler exception fixed because of BN not able to convert large strings
 ## 1.2.0
-
-
-
 ### Changes
 * API: Explorer URL is not mandatory anymore for treasuries
 * API/Bot/Client: Director restrictions for treasuries added

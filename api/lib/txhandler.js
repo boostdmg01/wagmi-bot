@@ -434,7 +434,7 @@ class TransactionHandler {
                 /** Native Token **/
 
                 /** Calculate valuation amount to send to receiver **/
-                const fullAmount = Web3.utils.toBN(value * (10 ** tokenDecimals[0]))
+                const fullAmount = Web3.utils.toBN(value).mul(Web3.utils.toBn(10 ** tokenDecimals[0]))
 
                 /** Check if payout wallet has enough balance to send the transaction **/
                 const accountBalance = (await api.query.system.account(treasuryAccount.address)).data.free.toBn()
@@ -489,7 +489,7 @@ class TransactionHandler {
                 const assetDecimals = (await api.query.assets.metadata(data.assetId)).decimals
 
                 /** Calculate asset amount to send to receiver **/
-                const assetAmount = Web3.utils.toBN(value * (10 ** assetDecimals))
+                const assetAmount = Web3.utils.toBN(value).mul(Web3.utils.toBN(10 ** assetDecimals))
 
                 /**  */
                 let assetAmountToSend = assetAmount
@@ -587,7 +587,7 @@ class TransactionHandler {
             }
 
             /** Calculate amount to be sent **/
-            const fullAmount = Web3.utils.toBN(value * (10 ** data.tokenDecimals))
+            const fullAmount = Web3.utils.toBN(value).mul(Web3.utils.toBN(10 ** data.tokenDecimals))
 
             if (data.isNative === 1) {
                 /** Native Token **/
