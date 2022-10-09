@@ -144,9 +144,11 @@ exports.getMembers = async (req, res) => {
 		logger.debug("Getting Discord members from API")
 		let lastUserId = 0
 		let users = {}
-		try {
-			let currentData = []
-			do {
+		let currentData = []
+		let retries = 0
+
+		do {
+			try {
 				const response = await axios.get(`https://discord.com/api/guilds/${process.env.BOT_GUILD_ID}/members`, {
 					headers: {
 						"User-Agent": "DiscordBot (wagmi, 1.0)",
@@ -165,14 +167,20 @@ exports.getMembers = async (req, res) => {
 				}
 
 				await checkRateLimit(response.headers)
-			} while (currentData.length)
+			} catch(err) {
+				if (err.response?.status === 429) {
+					retries++
+					await checkRateLimit(err.response.headers)
+				} else {
+					logger.error("Error on retrieving Discord members: %O", err)
+					res.status(500).send({ message: "Error on retrieving Discord members" })
+					break
+				}
+			}
+		} while (currentData.length && retries < 3)
 
-			cache.write('members', users)
-			res.status(200).send(users)
-		} catch (err) {
-			logger.error("Error on retrieving Discord members: %O", err)
-			res.status(500).send({ message: "Error on retrieving Discord members" })
-		}
+		cache.write('members', users)
+		res.status(200).send(users)
 	}
 }
 
