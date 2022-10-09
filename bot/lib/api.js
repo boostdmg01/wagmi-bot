@@ -7,6 +7,8 @@ const API = function () {
 	this.config = {}
 	this.treasuryElevations = {}
 	this.treasuryValuations = {}
+	this.treasuryRestrictions = {}
+	this.treasuryTiers = {}
 
 	this.client = axios.create({
 		baseURL: 'http://api:8081/api/',
@@ -44,6 +46,32 @@ const API = function () {
 			}
 		}).bind(this))
 
+		await this.request("treasury/restrictions").then((response => {
+			this.treasuryRestrictions = {}
+
+			const restrictions = response.data
+			for (let restriction of restrictions) {
+				if (!(restriction.treasuryId in this.treasuryRestrictions)) {
+					this.treasuryRestrictions[restriction.treasuryId] = {}
+				}
+
+				this.treasuryRestrictions[restriction.treasuryId][restriction.roleId] = restriction.channelIds.split(",").filter(e => e !== '')
+			}
+		}).bind(this))
+
+		await this.request("treasury/tiers").then((response => {
+			this.treasuryTiers = {}
+
+			const tiers = response.data
+			for (let tier of tiers) {
+				if (!(tier.treasuryId in this.treasuryTiers)) {
+					this.treasuryTiers[tier.treasuryId] = {}
+				}
+
+				this.treasuryTiers[tier.treasuryId][tier.roleId] = tier.percentage
+			}
+		}).bind(this))
+
 		await request("emoji/all").then((response => {
 			this.treasuryValuations = {}
 
@@ -61,15 +89,17 @@ const API = function () {
 			}
 		}).bind(this))
 
-		return { config, treasuryElevations, treasuryValuations }
+		return { config, treasuryElevations, treasuryValuations, treasuryRestrictions, treasuryTiers }
 	}
 
 	this.getConfiguration = () => {
 		const config = this.config
 		const treasuryElevations = this.treasuryElevations
 		const treasuryValuations = this.treasuryValuations
+		const treasuryRestrictions = this.treasuryRestrictions
+		const treasuryTiers = this.treasuryTiers
 
-		return { config, treasuryElevations, treasuryValuations }
+		return { config, treasuryElevations, treasuryValuations, treasuryRestrictions, treasuryTiers }
 	}
 
 	return this

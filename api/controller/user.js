@@ -1,5 +1,7 @@
 const User = require("../model/user.js")
 const logger = require("../lib/logger")
+const cache = require("../lib/cache")
+const csvWriter = require("csv-writer")
 
 /**
  * Insert or update user
@@ -73,6 +75,43 @@ exports.getById = async (req, res) => {
 		logger.error("Error on retrieving user Id %d: %O", err)
 		res.status(500).send({
 			message: "Error on retreving user"
+		})
+	}
+}
+
+/**
+ * Query all users and return a blob
+ * 
+ * @param {*} req - Request
+ * @param {*} res - Response
+ */
+ exports.export = async (req, res) => {
+	try {
+		logger.debug("Getting all users - export")
+
+		const cachedMembers = cache.read('members', Number.MAX_VALUE)
+
+		let result = await User.getAll({})
+		result.map(e => {
+			e.username = cachedMembers?.[e.id] ?? ""
+			e.twitterUrl = null
+
+			if (e.twitterHandle !== null && e.twitterHandle !== "") {
+				e.twitterUrl = "https://twitter.com/" + e.twitterHandle
+			}
+
+			return e;
+		})
+
+		const csvStringifier = csvWriter.createObjectCsvStringifier({
+			header: Object.keys(result[0]).map(e => { return { id: e, title: e }})
+		});
+	
+		res.send(csvStringifier.getHeaderString() + csvStringifier.stringifyRecords(result))
+	} catch (err) {
+		logger.error(`Error on retrieving users - export: %O`, err)
+		res.status(500).send({
+			message: "Error on retrieving users on export"
 		})
 	}
 }

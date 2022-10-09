@@ -158,6 +158,44 @@ exports.getAll = async (req, res) => {
 }
 
 /**
+ * Query all treasury restrictions
+ * 
+ * @param {*} req - Request
+ * @param {*} res - Response
+ */
+ exports.getRestrictions = async (req, res) => {
+	try {
+		logger.debug("Getting all treasury restrictions")
+		const result = await Treasury.getRestrictions()
+		res.send(result)
+	} catch (err) {
+		logger.error(`Error on retrieving treasury restrictions: %O`, err)
+		res.status(500).send({
+			message: "Error on retrieving treasury restrictions"
+		})
+	}
+}
+
+/**
+ * Query all treasury tiers
+ * 
+ * @param {*} req - Request
+ * @param {*} res - Response
+ */
+ exports.getTiers = async (req, res) => {
+	try {
+		logger.debug("Getting all treasury tiers")
+		const result = await Treasury.getTiers()
+		res.send(result)
+	} catch (err) {
+		logger.error(`Error on retrieving treasury tiers: %O`, err)
+		res.status(500).send({
+			message: "Error on retrieving treasury tiers"
+		})
+	}
+}
+
+/**
  * Query treasury by id
  * 
  * @param {*} req - Request
@@ -275,7 +313,7 @@ checkTreasuryValidation = (treasury, isUpdate = false) => {
 		})
 	}
 
-	if (!Validation.isUrl(treasury.explorerUrl)) {
+	if (Validation.isNotEmpty(treasury.explorerUrl) && !Validation.isUrl(treasury.explorerUrl)) {
 		errors.push({
 			key: 'explorerUrl',
 			message: 'Not a valid Explorer URL'

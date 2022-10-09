@@ -12,6 +12,7 @@ module.exports = (app) => {
 	router.post("/api/user/insertOrUpdate", user.insertOrUpdate)
 	router.get("/api/user/all", user.getAll)
 	router.get("/api/user/:id", user.getById)
+	router.get("/api/user/export", user.export)
 
 
 	const discord = require("./controller/discord.js")
@@ -32,6 +33,8 @@ module.exports = (app) => {
 	router.get("/api/treasury/all", treasury.getAll)
 	router.get("/api/treasury/public", treasury.getAllPublic)
 	router.get("/api/treasury/:id", treasury.getById)
+	router.get("/api/treasury/restrictions", treasury.getRestrictions)
+	router.get("/api/treasury/tiers", treasury.getTiers)
 
 	const emoji = require("./controller/emoji.js")
 	router.post("/api/emoji/insert", emoji.insert)

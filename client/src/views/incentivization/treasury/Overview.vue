@@ -176,13 +176,9 @@ export default {
           align: "start",
         },
       ],
-      oldQuery: {}
+      oldQuery: {},
+      totalItems: 0
     };
-  },
-  computed: {
-    totalItems: function() {
-      return this.treasuries.length
-    }
   },
   methods: {
     async deleteTreasury(rowData) {

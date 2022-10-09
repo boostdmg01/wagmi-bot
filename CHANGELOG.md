@@ -1,5 +1,22 @@
 # CHANGELOG
 
+## 1.2.0
+
+
+
+### Changes
+* API: Explorer URL is not mandatory anymore for treasuries
+* API/Bot/Client: Director restrictions for treasuries added
+* API/Bot/Client: Treasury tiers added
+* API/Client: Verified user overview page refactored and export functionality added
+* Bot: Valuation reactions by non-directors will be removed immediately
+
+### Bugfixes
+* API: Valuation content pruning logic fixed
+* API: Rate limits for Discord API requests are now respected
+* Bot: Removing a valuation emoji only deletes the valuation now if the valuation has not been rewarded yet
+* Client: Pagination fix for emoji and treasury overview page
+
 ## 1.1.8
 ### Changes
 * API/Bot: Added content tracking that will be pruned after 30 days

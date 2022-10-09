@@ -127,11 +127,30 @@ CREATE TABLE `valuation_content` (
   `timestamp` int(12) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+CREATE TABLE `treasury_restriction` (
+  `treasuryId` bigint(12) NOT NULL,
+  `roleId` varchar(20) NOT NULL,
+  `channelIds` text DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+
+CREATE TABLE `treasury_tier` (
+  `treasuryId` bigint(12) NOT NULL,
+  `roleId` varchar(20) NOT NULL,
+  `percentage` double DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 ALTER TABLE `valuation_content`
   ADD UNIQUE KEY `messageId` (`messageId`);
 
 ALTER TABLE `existential_deposit`
   ADD UNIQUE KEY `userId` (`userId`,`chainPrefix`);
+
+ALTER TABLE `treasury_restriction`
+  ADD UNIQUE KEY `id` (`treasuryId`,`roleId`);
+
+ALTER TABLE `treasury_tier`
+  ADD UNIQUE KEY `id` (`treasuryId`,`roleId`);
 
 ALTER TABLE `config`
   ADD PRIMARY KEY (`name`);

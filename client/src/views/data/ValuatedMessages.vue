@@ -179,7 +179,7 @@ export default {
     socket.on("processed", () => {
       this.transactionMessage = `Process Transactions`;
       this.$notify({ type: "success", text: `Transactions processed.` });
-      this.$refs.vuetable.reload();
+      this.getData();
     });
 
     socket.on("error", (message) => {

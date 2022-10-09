@@ -98,6 +98,178 @@
             </div>
           </div>
         </div>
+        <h2 class="mt-6 text-l font-semibold">Restrictions</h2>
+        <div
+          class="
+            px-4
+            border
+            rounded-lg
+            bg-white
+            border-gray-300
+            dark:border-gray-700
+            p-5
+            mt-6
+          "
+          v-for="(restriction, index) in treasury.restrictions" :key="restriction">
+          <div>
+            <div class="flex items-center">
+              <FormLabel>Role</FormLabel>
+              <button class="ml-auto mb-2 text-red-600" @click="removeRestriction(index)">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+  <path stroke-linecap="round" stroke-linejoin="round" d="M9.75 9.75l4.5 4.5m0-4.5l-4.5 4.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+</svg>
+              </button>
+            </div>
+            <div class="flex flex-wrap">
+              <div class="w-full lg:w-5/12">
+                <multiselect
+                  v-model="restriction.roleId"
+                  :allow-empty="false"
+                  :showLabels="false"
+                  :showPointer="false"
+                  label="name"
+                  track-by="id"
+                  :options="roles"
+                >
+                <template slot="singleLabel" slot-scope="{ option }"
+                ><div>
+                  <span :style="getDiscordColor(option.color)">{{
+                    option.name
+                  }}</span>
+                </div></template
+              >
+              <template slot="option" slot-scope="{ option }"
+                ><div>
+                  <span :style="getDiscordColor(option.color)">{{
+                    option.name
+                  }}</span>
+                </div></template
+              >
+                </multiselect>
+              </div>
+              <div class="w-full lg:w-2/12 text-center form-divider">in channels</div>
+              <div class="w-full lg:w-5/12">
+                <multiselect
+                  v-model="restriction.channelIds"
+                  :allow-empty="true"
+                  :showLabels="false"
+                  :show-no-results="false"
+                  :hide-selected="true"
+                  :multiple="true"
+                  :showPointer="false"
+                  label="name"
+                  track-by="id"
+                  :options="channels"
+                >
+                  <template slot="singleLabel" slot-scope="{ option }"
+                    ><div>{{ option.name }}</div></template
+                  >
+                  <template slot="option" slot-scope="{ option }"
+                    ><div>{{ option.name }}</div></template
+                  >
+                </multiselect>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="flex justify-end mt-6">
+          <button
+              @click="addRestriction()"
+              class="
+                text-white
+                bg-blue-700
+                hover:bg-blue-800
+                focus:ring-4 focus:ring-blue-300
+                font-medium
+                rounded-lg
+                text-sm
+                px-5
+                py-2.5
+                dark:bg-blue-600 dark:hover:bg-blue-700
+                focus:outline-none
+                dark:focus:ring-blue-800
+              "
+            >
+              Add Restriction
+          </button>
+        </div>
+        <h2 class="mt-6 text-l font-semibold">Tiers</h2>
+        <div
+          class="
+            px-4
+            border
+            rounded-lg
+            bg-white
+            border-gray-300
+            dark:border-gray-700
+            p-5
+            mt-6
+          "
+          v-for="(tier, index) in treasury.tiers" :key="tier">
+          <div>
+            <div class="flex items-center">
+              <FormLabel>Role</FormLabel>
+              <button class="ml-auto mb-2 text-red-600" @click="removeTier(index)">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+  <path stroke-linecap="round" stroke-linejoin="round" d="M9.75 9.75l4.5 4.5m0-4.5l-4.5 4.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+</svg>
+              </button>
+            </div>
+            <div class="flex flex-wrap">
+              <div class="w-full lg:w-5/12">
+                <multiselect
+                  v-model="tier.roleId"
+                  :allow-empty="false"
+                  :showLabels="false"
+                  :showPointer="false"
+                  label="name"
+                  track-by="id"
+                  :options="roles"
+                >
+                <template slot="singleLabel" slot-scope="{ option }"
+                ><div>
+                  <span :style="getDiscordColor(option.color)">{{
+                    option.name
+                  }}</span>
+                </div></template
+              >
+              <template slot="option" slot-scope="{ option }"
+                ><div>
+                  <span :style="getDiscordColor(option.color)">{{
+                    option.name
+                  }}</span>
+                </div></template
+              >
+                </multiselect>
+              </div>
+              <div class="w-full lg:w-2/12 text-center form-divider">receives</div>
+              <div class="w-full lg:w-5/12">
+                <FormInput v-model="tier.percentage" />
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="flex justify-end mt-6">
+          <button
+              @click="addTier()"
+              class="
+                text-white
+                bg-blue-700
+                hover:bg-blue-800
+                focus:ring-4 focus:ring-blue-300
+                font-medium
+                rounded-lg
+                text-sm
+                px-5
+                py-2.5
+                dark:bg-blue-600 dark:hover:bg-blue-700
+                focus:outline-none
+                dark:focus:ring-blue-800
+              "
+            >
+              Add Tier
+          </button>
+        </div>
         <h2 class="mt-6 text-l font-semibold">Payout Details</h2>
         <div
           class="
@@ -352,6 +524,7 @@ export default {
   data() {
     return {
       channels: [],
+      roles: [],
       emojis: [],
       id: null,
       treasury: {
@@ -380,6 +553,8 @@ export default {
         assetId: null,
         sendMinBalance: true,
         sendExistentialDeposit: false,
+        restrictions: [],
+        tiers: []
       },
       errors: []
     };
@@ -406,6 +581,28 @@ export default {
     },
   },
   methods: {
+    removeRestriction(index) {
+      this.treasury.restrictions.splice(index, 1)
+    },
+    addRestriction() {
+      this.treasury.restrictions.push({
+        roleId: null,
+        channelIds: null
+      })
+    },
+    removeTier(index) {
+      this.treasury.tiers.splice(index, 1)
+    },
+    addTier() {
+      this.treasury.tiers.push({
+        roleId: null,
+        percentage: 100
+      })
+    },
+    getDiscordColor(color) {
+      let hexColor = color.toString(16);
+      return { color: "#" + hexColor };
+    },
     getDiscordEmojiUrl(id) {
       return `https://cdn.discordapp.com/emojis/${id}.webp?size=64&quality=lossless`;
     },
@@ -421,6 +618,14 @@ export default {
       await API.request("discord/emojis")
         .then((response) => {
           this.emojis = response.data;
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+
+        await API.request("discord/roles")
+        .then((response) => {
+          this.roles = response.data;
         })
         .catch((error) => {
           console.log(error);
@@ -458,6 +663,22 @@ export default {
             this.treasury.sendMinBalance = !!this.treasury.sendMinBalance;
             this.treasury.sendExistentialDeposit =
               !!this.treasury.sendExistentialDeposit;
+
+            this.treasury.restrictions.map((restriction) => {
+              const splittedChannelIds = restriction.channelIds.split(',')
+              restriction.roleId = this.roles.find(
+                (role) => role.id == restriction.roleId
+              ) ?? null
+              restriction.channelIds = this.channels.filter((channel) =>
+                splittedChannelIds.includes(channel.id)
+              ) ?? null;
+            })
+
+            this.treasury.tiers.map((tier) => {
+              tier.roleId = this.roles.find(
+                (role) => role.id == tier.roleId
+              ) ?? null
+            })
           })
           .catch((error) => {
             console.log(error);
@@ -478,6 +699,30 @@ export default {
       data.isNative = data.isNative?.value;
       data.parachainType = data.parachainType?.value;
       data.type = data.type?.value;
+
+      data.restrictions = data.restrictions.map(restriction => {
+        let newRestriction = {
+          channelIds: "",
+          roleId: null
+        }
+
+        newRestriction.channelIds = restriction.channelIds?.map((channel) => channel.id).join(",") ?? ""
+        newRestriction.roleId = restriction.roleId?.id ?? null;
+
+        return newRestriction
+      }).filter(restriction => restriction.roleId !== null)
+
+      data.tiers = data.tiers.map(tier => {
+        let newTier = {
+          roleId: null,
+          percentage: null
+        }
+
+        newTier.roleId = tier.roleId?.id ?? null;
+        newTier.percentage = parseFloat(tier.percentage)
+
+        return newTier
+      }).filter(tier => tier.roleId !== null)
 
       API.request(
         this.action == "insert"

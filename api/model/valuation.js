@@ -298,7 +298,7 @@ Valuation.getAllPublic = async (options) => {
 	try {
 		const timestamp = Math.floor(Date.now() / 1000) - (30 * 24 * 60 * 60)
 
-		await sql.execute("DELETE FROM valuation_content WHERE timestamp > ?", [timestamp])
+		await sql.execute("DELETE FROM valuation_content WHERE timestamp <= ?", [timestamp])
 	} catch (err) {
 		throw err
 	}

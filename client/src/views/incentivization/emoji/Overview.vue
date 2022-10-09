@@ -195,13 +195,9 @@ export default {
           align: "start",
         },
       ],
-      oldQuery: {}
+      oldQuery: {},
+      totalItems: 0
     };
-  },
-  computed: {
-    totalItems: function() {
-      return this.emojis.length
-    }
   },
   methods: {
     getDiscordEmojiUrl(id) {

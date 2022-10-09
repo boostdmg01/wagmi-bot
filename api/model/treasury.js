@@ -32,6 +32,8 @@ const Treasury = function (treasury = {}) {
 	this.sendExistentialDeposit = treasury.sendExistentialDeposit || 0
 	this.parachainType = treasury.parachainType || 0
 	this.encryptionKey = treasury.encryptionKey || null
+	this.restrictions = treasury.restrictions || []
+	this.tiers = treasury.tiers || []
 }
 
 /**
@@ -74,6 +76,22 @@ Treasury.insert = async (treasury) => {
 			treasury.sendExistentialDeposit,
 			treasury.parachainType,
 		])
+
+		for (let restriction of treasury.restrictions) {
+			await sql.execute("INSERT INTO treasury_restriction (treasuryId, roleId, channelIds) VALUES (?, ?, ?)", [
+				treasury.id,
+				restriction.roleId,
+				restriction.channelIds
+			])
+		}
+
+		for (let tier of treasury.tiers) {
+			await sql.execute("INSERT INTO treasury_tier (treasuryId, roleId, percentage) VALUES (?, ?, ?)", [
+				treasury.id,
+				tier.roleId,
+				tier.percentage
+			])
+		}
 
 		return { status: 200, message: "Treasury inserted" }
 	} catch (err) {
@@ -126,6 +144,26 @@ Treasury.update = async (id, treasury) => {
 
 		await sql.execute(`UPDATE treasury SET ${bindingKeys.map(e => e + ' = ?' ).join(", ")} WHERE id = ?`, [ ... bindingKeys.map(e => treasury[e]), treasury.id ])
 
+		await sql.execute("DELETE FROM treasury_restriction WHERE treasuryId = ?", [treasury.id])
+
+		for (let restriction of treasury.restrictions) {
+			await sql.execute("INSERT INTO treasury_restriction (treasuryId, roleId, channelIds) VALUES (?, ?, ?)", [
+				treasury.id,
+				restriction.roleId,
+				restriction.channelIds
+			])
+		}
+
+		await sql.execute("DELETE FROM treasury_tier WHERE treasuryId = ?", [treasury.id])
+
+		for (let tier of treasury.tiers) {
+			await sql.execute("INSERT INTO treasury_tier (treasuryId, roleId, percentage) VALUES (?, ?, ?)", [
+				treasury.id,
+				tier.roleId,
+				tier.percentage
+			])
+		}
+
 		return { status: 200, message: "Treasury updated" }
 	} catch (err) {
 		throw err
@@ -141,6 +179,8 @@ Treasury.update = async (id, treasury) => {
 Treasury.delete = async (id) => {
 	try {
 		await sql.execute("DELETE FROM treasury WHERE id = ?", [id])
+		await sql.execute("DELETE FROM treasury_restriction WHERE treasuryId = ?", [id])
+		await sql.execute("DELETE FROM treasury_tier WHERE treasuryId = ?", [id])
 
 		return { status: 200, message: "Treasury deleted" }
 	} catch (err) {
@@ -221,6 +261,38 @@ Treasury.getAllPublic = async () => {
 }
 
 /**
+ * Query all treasury restrictions
+ * 
+ * @param {object} options - query options
+ * @return {array} - query results
+ */
+ Treasury.getRestrictions = async () => {
+	try {
+		let [rows] = await sql.query(`SELECT * FROM treasury_restriction`)
+
+		return rows
+	} catch (err) {
+		throw err
+	}
+}
+
+/**
+ * Query all treasury tiers
+ * 
+ * @param {object} options - query options
+ * @return {array} - query results
+ */
+ Treasury.getTiers = async () => {
+	try {
+		let [rows] = await sql.query(`SELECT * FROM treasury_tier`)
+
+		return rows
+	} catch (err) {
+		throw err
+	}
+}
+
+/**
  * Query treasury by id
  * 
  * @param {number} id - treasury id
@@ -236,6 +308,15 @@ Treasury.getById = async (id) => {
 		})
 
 		if (rows.length == 1) {
+			let [restrictions] = await sql.execute("SELECT * FROM treasury_restriction WHERE treasuryId = ?", [id])
+
+			rows[0].restrictions = restrictions
+
+
+			let [tiers] = await sql.execute("SELECT * FROM treasury_tier WHERE treasuryId = ?", [id])
+
+			rows[0].tiers = tiers
+
 			return new Treasury(rows[0])
 		} else {
 			return new Treasury()
