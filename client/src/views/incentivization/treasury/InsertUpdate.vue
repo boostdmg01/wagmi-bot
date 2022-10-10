@@ -244,7 +244,29 @@
               </div>
               <div class="w-full lg:w-2/12 text-center form-divider">receives</div>
               <div class="w-full lg:w-5/12">
-                <FormInput v-model="tier.percentage" />
+                <div class="flex items-center">
+                  <FormInput v-model="tier.percentage" /><span class="ml-2">%</span>
+                </div>
+                <div>in the following channels</div>
+                <multiselect
+                  v-model="tier.channelIds"
+                  :allow-empty="false"
+                  :showLabels="false"
+                  :show-no-results="false"
+                  :hide-selected="true"
+                  :multiple="true"
+                  :showPointer="false"
+                  label="name"
+                  track-by="id"
+                  :options="channels"
+                >
+                  <template slot="singleLabel" slot-scope="{ option }"
+                    ><div>{{ option.name }}</div></template
+                  >
+                  <template slot="option" slot-scope="{ option }"
+                    ><div>{{ option.name }}</div></template
+                  >
+                </multiselect>
               </div>
             </div>
           </div>
@@ -596,7 +618,8 @@ export default {
     addTier() {
       this.treasury.tiers.push({
         roleId: null,
-        percentage: 100
+        percentage: 100,
+        channelIds: null
       })
     },
     getDiscordColor(color) {
@@ -675,9 +698,14 @@ export default {
             })
 
             this.treasury.tiers.map((tier) => {
+              const splittedChannelIds = tier.channelIds.split(',')
               tier.roleId = this.roles.find(
                 (role) => role.id == tier.roleId
               ) ?? null
+
+              tier.channelIds = this.channels.filter((channel) =>
+                splittedChannelIds.includes(channel.id)
+              ) ?? null;
             })
           })
           .catch((error) => {
@@ -720,6 +748,7 @@ export default {
 
         newTier.roleId = tier.roleId?.id ?? null;
         newTier.percentage = parseFloat(tier.percentage)
+        newTier.channelIds = tier.channelIds?.map((channel) => channel.id).join(",") ?? ""
 
         return newTier
       }).filter(tier => tier.roleId !== null)

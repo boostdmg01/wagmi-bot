@@ -86,10 +86,11 @@ Treasury.insert = async (treasury) => {
 		}
 
 		for (let tier of treasury.tiers) {
-			await sql.execute("INSERT INTO treasury_tier (treasuryId, roleId, percentage) VALUES (?, ?, ?)", [
+			await sql.execute("INSERT INTO treasury_tier (treasuryId, roleId, percentage, channelIds) VALUES (?, ?, ?, ?)", [
 				treasury.id,
 				tier.roleId,
-				tier.percentage
+				tier.percentage,
+				tier.channelIds
 			])
 		}
 
@@ -157,10 +158,11 @@ Treasury.update = async (id, treasury) => {
 		await sql.execute("DELETE FROM treasury_tier WHERE treasuryId = ?", [treasury.id])
 
 		for (let tier of treasury.tiers) {
-			await sql.execute("INSERT INTO treasury_tier (treasuryId, roleId, percentage) VALUES (?, ?, ?)", [
+			await sql.execute("INSERT INTO treasury_tier (treasuryId, roleId, percentage, channelIds) VALUES (?, ?, ?, ?)", [
 				treasury.id,
 				tier.roleId,
-				tier.percentage
+				tier.percentage,
+				tier.channelIds
 			])
 		}
 

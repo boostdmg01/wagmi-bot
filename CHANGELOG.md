@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 1.2.1
+### Changes
+* API/Bot/Client: Added channel criteria for tier system 
+
 ## 1.2.0.1 Hotfix
 ### Bugfixes
 * API: Misplaced routing options

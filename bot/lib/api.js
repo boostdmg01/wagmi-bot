@@ -68,7 +68,13 @@ const API = function () {
 					this.treasuryTiers[tier.treasuryId] = {}
 				}
 
-				this.treasuryTiers[tier.treasuryId][tier.roleId] = tier.percentage
+				if (!(tier.roleId in this.treasuryTiers[tier.treasuryId])) {
+					this.treasuryTiers[tier.treasuryId][tier.roleId] = {}
+				}
+
+				tier.channelIds.split(",").filter(e => e !== '').map(channelId => {
+					this.treasuryTiers[tier.treasuryId][tier.roleId][channelId] = tier.percentage
+				})
 			}
 		}).bind(this))
 

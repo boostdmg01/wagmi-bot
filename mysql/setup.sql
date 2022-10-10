@@ -137,7 +137,8 @@ CREATE TABLE `treasury_restriction` (
 CREATE TABLE `treasury_tier` (
   `treasuryId` bigint(12) NOT NULL,
   `roleId` varchar(20) NOT NULL,
-  `percentage` double DEFAULT NULL
+  `percentage` double DEFAULT NULL,
+  `channelIds` text DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 ALTER TABLE `valuation_content`
@@ -150,7 +151,7 @@ ALTER TABLE `treasury_restriction`
   ADD UNIQUE KEY `id` (`treasuryId`,`roleId`);
 
 ALTER TABLE `treasury_tier`
-  ADD UNIQUE KEY `id` (`treasuryId`,`roleId`);
+  ADD UNIQUE KEY `id` (`treasuryId`,`roleId`,`percentage`);
 
 ALTER TABLE `config`
   ADD PRIMARY KEY (`name`);

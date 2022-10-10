@@ -118,9 +118,9 @@ class ValuationAction {
                                         
                                         const roleIds = Object.keys(tiers)
                                         for (let roleId of roleIds) {
-                                            if (authorUser.roles.cache.has(roleId)) {
-                                                if (tiers[roleId] > valuationPercentage) {
-                                                    valuationPercentage = tiers[roleId]
+                                            if (authorUser.roles.cache.has(roleId) && messageReaction.message.channelId in tiers[roleId]) {
+                                                if (tiers[roleId][messageReaction.message.channelId] > valuationPercentage) {
+                                                    valuationPercentage = tiers[roleId][messageReaction.message.channelId]
                                                 }
                                             }
                                         }
