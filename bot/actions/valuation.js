@@ -73,6 +73,8 @@ class ValuationAction {
                                 /** Build channel breadcrumb for valuation report **/
                                 let source = await this.buildSourceName(messageReaction.message.channelId)
 
+                                let channelId = messageReaction.message.channelId
+
                                 /** Base data for valuation based on current message **/
                                 let insertValuationData = {
                                     messageId: messageReaction.message.id,
@@ -99,6 +101,7 @@ class ValuationAction {
 
                                 /** If the current message is an elevated one, update data for the valuation based on the old message **/
                                 if (elevatedMessage.newMessageId) {
+                                    channelId = elevatedMessage.oldChannelId
                                     source = await this.buildSourceName(elevatedMessage.oldChannelId)
 
                                     insertValuationData.messageId = elevatedMessage.oldMessageId
@@ -118,9 +121,9 @@ class ValuationAction {
                                         
                                         const roleIds = Object.keys(tiers)
                                         for (let roleId of roleIds) {
-                                            if (authorUser.roles.cache.has(roleId) && messageReaction.message.channelId in tiers[roleId]) {
-                                                if (tiers[roleId][messageReaction.message.channelId] > valuationPercentage) {
-                                                    valuationPercentage = tiers[roleId][messageReaction.message.channelId]
+                                            if (authorUser.roles.cache.has(roleId) && channelId in tiers[roleId]) {
+                                                if (tiers[roleId][channelId] > valuationPercentage) {
+                                                    valuationPercentage = tiers[roleId][channelId]
                                                 }
                                             }
                                         }

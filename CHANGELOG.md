@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 1.2.1.1 Hotfix
+### Bugfixes
+* Bot: Tiered awards are now based on old channel if it is an elevated message
+
 ## 1.2.1
 ### Changes
 * API/Bot/Client: Added channel criteria for tier system 
