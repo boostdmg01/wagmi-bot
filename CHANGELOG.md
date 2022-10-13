@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## 1.2.1.2 Hotfix
+## Bugfixes
+* Bot: Condition for removing valuated messages fixed
+* Bot: Tier and restriction system does now check for the parent channel data if valuated in a thread
+
 ## 1.2.1.1 Hotfix
 ### Bugfixes
 * Bot: Tiered awards are now based on old channel if it is an elevated message

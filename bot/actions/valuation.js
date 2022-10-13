@@ -42,6 +42,12 @@ class ValuationAction {
 
         /** Check if the emoji which has been reacted with is one of the treasury emojis **/
         if (messageReaction._emoji.id in treasuryValuations) {
+            let channelId = messageReaction.message.channelId;
+
+            if (messageReaction.message.channel.type === Discord.ChannelType.GuildPublicThread || messageReaction.message.channel.type === Discord.ChannelType.GuildPrivateThread) {
+                channelId = await this.client.channels.fetch(messageReaction.message.channel.parentId);
+            }
+
             this.client.guilds.fetch(process.env.BOT_GUILD_ID).then(guild => {
                 /** Fetch user **/
                 guild.members.fetch(user.id).then(reactor => {
@@ -54,7 +60,7 @@ class ValuationAction {
                         const roleIds = Object.keys(restrictions)
                         for (let roleId of roleIds) {
                             if (reactor.roles.cache.has(roleId)) {
-                                if (restrictions[roleId].includes(messageReaction.message.channelId) || restrictions[roleId].length == 0) {
+                                if (restrictions[roleId].includes(channelId) || restrictions[roleId].length == 0) {
                                     eligible = true
                                     break
                                 }
@@ -72,8 +78,6 @@ class ValuationAction {
 
                                 /** Build channel breadcrumb for valuation report **/
                                 let source = await this.buildSourceName(messageReaction.message.channelId)
-
-                                let channelId = messageReaction.message.channelId
 
                                 /** Base data for valuation based on current message **/
                                 let insertValuationData = {
@@ -205,6 +209,12 @@ ${messageReaction.message.url}`)
 
         /** Check if the emoji which has been reacted with is one of the treasury emojis **/
         if (messageReaction._emoji.id in treasuryValuations) {
+            let channelId = messageReaction.message.channelId;
+
+            if (messageReaction.message.channel.type === Discord.ChannelType.GuildPublicThread || messageReaction.message.channel.type === Discord.ChannelType.GuildPrivateThread) {
+                channelId = await this.client.channels.fetch(messageReaction.message.channel.parentId);
+            }
+
             this.client.guilds.fetch(process.env.BOT_GUILD_ID).then(guild => {
                 /** Fetch user and check if he has a Director role **/
                 guild.members.fetch(user.id).then(reactor => {
@@ -217,7 +227,7 @@ ${messageReaction.message.url}`)
                         const roleIds = Object.keys(restrictions)
                         for (let roleId of roleIds) {
                             if (reactor.roles.cache.has(roleId)) {
-                                if (restrictions[roleId].includes(messageReaction.message.channelId) || restrictions[roleId].length == 0) {
+                                if (restrictions[roleId].includes(channelId) || restrictions[roleId].length == 0) {
                                     eligible = true
                                     break
                                 }
@@ -249,7 +259,7 @@ ${messageReaction.message.url}`)
                                 }, "POST").then(response => {
                                     const valuatedMessage = response.data
 
-                                    if (valuatedMessage.id && valuatedMessage.transactionHash !== null) {
+                                    if (valuatedMessage.id && valuatedMessage.status != 2) {
                                         API.request(`http://api:8081/api/valuation/delete/${valuatedMessage.id}`, null, 'DELETE').then(async response => {
                                             let emoji = await this.client.emojis.cache.get(messageReaction._emoji.id)
 
