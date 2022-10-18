@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## 1.2.1.3 Hotfix
+## Bugfixes
+* API: TransactionHandler handling decimals values
+* Bot: Thread handling for valuations
+
 ## 1.2.1.2 Hotfix
 ## Bugfixes
 * Bot: Condition for removing valuated messages fixed

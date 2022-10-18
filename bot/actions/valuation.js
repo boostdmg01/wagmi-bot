@@ -45,7 +45,7 @@ class ValuationAction {
             let channelId = messageReaction.message.channelId;
 
             if (messageReaction.message.channel.type === Discord.ChannelType.GuildPublicThread || messageReaction.message.channel.type === Discord.ChannelType.GuildPrivateThread) {
-                channelId = await this.client.channels.fetch(messageReaction.message.channel.parentId);
+                channelId = (await this.client.channels.fetch(messageReaction.message.channel.parentId))?.id;
             }
 
             this.client.guilds.fetch(process.env.BOT_GUILD_ID).then(guild => {
@@ -212,7 +212,7 @@ ${messageReaction.message.url}`)
             let channelId = messageReaction.message.channelId;
 
             if (messageReaction.message.channel.type === Discord.ChannelType.GuildPublicThread || messageReaction.message.channel.type === Discord.ChannelType.GuildPrivateThread) {
-                channelId = await this.client.channels.fetch(messageReaction.message.channel.parentId);
+                channelId = (await this.client.channels.fetch(messageReaction.message.channel.parentId))?.id;
             }
 
             this.client.guilds.fetch(process.env.BOT_GUILD_ID).then(guild => {
