@@ -40,12 +40,19 @@ class DirectorElevationAction {
 		const { config, treasuryElevations } = API.getConfiguration()
 
 		/** Only elevate from news or content channels **/
-		let elevate = config.news_channel_ids.includes(messageReaction.message.channelId) || config.content_channel_ids.includes(messageReaction.message.channelId)
+		let channelId = messageReaction.message.channelId
+
+		if (messageReaction.message.channel.type === Discord.ChannelType.GuildPublicThread || messageReaction.message.channel.type === Discord.ChannelType.GuildPrivateThread) {
+			channelId = (await this.client.channels.fetch(messageReaction.message.channel.parentId))?.id;
+		}
+
+		let elevate = config.news_channel_ids.includes(channelId) || config.content_channel_ids.includes(channelId)
+
 		if (!elevate) {
 			return
 		}
 
-		let isContent = !config.news_channel_ids.includes(messageReaction.message.channelId)
+		let isContent = !config.news_channel_ids.includes(channelId)
 
 		messageReaction.message.react(config.elevation_emoji_id)
 

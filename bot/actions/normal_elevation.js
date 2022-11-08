@@ -44,9 +44,15 @@ class NormalElevationAction {
         let elevationTitle = "Top Story 🔥"
 
 		/** Only elevate from news or content channels **/
-        if (config.news_channel_ids.includes(messageReaction.message.channelId)) {
+		let channelId = messageReaction.message.channelId
+
+		if (messageReaction.message.channel.type === Discord.ChannelType.GuildPublicThread || messageReaction.message.channel.type === Discord.ChannelType.GuildPrivateThread) {
+			channelId = (await this.client.channels.fetch(messageReaction.message.channel.parentId))?.id;
+		}
+
+        if (config.news_channel_ids.includes(channelId)) {
             elevate = true
-        } else if (config.content_channel_ids.includes(messageReaction.message.channelId)) {
+        } else if (config.content_channel_ids.includes(channelId)) {
             elevate = true
             elevationChannelId = config.content_elevation_channel_id
             elevationTitle = "Top Content 🔥"

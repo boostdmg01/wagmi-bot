@@ -1,12 +1,19 @@
 # CHANGELOG
 
+## 1.2.2
+
+### Changes
+* Bot: Director and normal elevations for threads added
+### Bugfixes
+* API: Creation of treasuries fixed
+
 ## 1.2.1.3 Hotfix
-## Bugfixes
+### Bugfixes
 * API: TransactionHandler handling decimals values
 * Bot: Thread handling for valuations
 
 ## 1.2.1.2 Hotfix
-## Bugfixes
+### Bugfixes
 * Bot: Condition for removing valuated messages fixed
 * Bot: Tier and restriction system does now check for the parent channel data if valuated in a thread
 

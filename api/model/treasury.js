@@ -51,7 +51,7 @@ Treasury.insert = async (treasury) => {
 			treasury.mnemonic = crypto.encrypt(treasury.mnemonic, treasury.encryptionKey)
 		}
 
-		await sql.execute("INSERT INTO treasury (name, elevationActive, elevationChannelId, elevationEmojiId, elevationAmount, type, rpcUrl, explorerUrl, chainPrefix, mnemonic, chainOptions, privateKey, isNative, tokenAddress, tokenDecimals, coinName, royaltyAddress, royaltyEnabled, royaltyPercentage, assetId, sendMinBalance, sendExistentialDeposit, parachainType) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", [
+		let query = await sql.execute("INSERT INTO treasury (name, elevationActive, elevationChannelId, elevationEmojiId, elevationAmount, type, rpcUrl, explorerUrl, chainPrefix, mnemonic, chainOptions, privateKey, isNative, tokenAddress, tokenDecimals, coinName, royaltyAddress, royaltyEnabled, royaltyPercentage, assetId, sendMinBalance, sendExistentialDeposit, parachainType) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", [
 			treasury.name,
 			treasury.elevationActive,
 			treasury.elevationChannelId,
@@ -79,7 +79,7 @@ Treasury.insert = async (treasury) => {
 
 		for (let restriction of treasury.restrictions) {
 			await sql.execute("INSERT INTO treasury_restriction (treasuryId, roleId, channelIds) VALUES (?, ?, ?)", [
-				treasury.id,
+				query[0].insertId,
 				restriction.roleId,
 				restriction.channelIds
 			])
@@ -87,7 +87,7 @@ Treasury.insert = async (treasury) => {
 
 		for (let tier of treasury.tiers) {
 			await sql.execute("INSERT INTO treasury_tier (treasuryId, roleId, percentage, channelIds) VALUES (?, ?, ?, ?)", [
-				treasury.id,
+				query[0].insertId,
 				tier.roleId,
 				tier.percentage,
 				tier.channelIds
