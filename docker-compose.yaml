@@ -5,8 +5,6 @@ services:
         image: mariadb:10.5.16
         restart: always
         command: --default-authentication-plugin=mysql_native_password
-        ports:
-            - 3306:3306
         environment:
             MYSQL_ROOT_PASSWORD: ${DATABASE_ROOT_PASSWORD}
             MYSQL_USER: ${DATABASE_USER}
@@ -19,9 +17,6 @@ services:
         container_name: api
         build: ./api
         restart: always
-        ports:
-            - 8081:8081
-            - 8086:8086
         environment:
             ENVIRONMENT: ${ENVIRONMENT}
             DATABASE_USER: ${DATABASE_USER}
@@ -47,8 +42,6 @@ services:
         container_name: bot
         build: ./bot
         restart: always
-        ports:
-            - 8085:8085
         environment:
             ENVIRONMENT: ${ENVIRONMENT}
             API_KEY: ${API_KEY}
